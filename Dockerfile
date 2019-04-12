@@ -1,5 +1,29 @@
+# BUILD
+FROM abilioesteves/gowebbuilder:unstable as builder
+
+ENV p $GOPATH/src/github.com/abilioesteves/whisper
+
+ADD ./ ${p}
+WORKDIR ${p}
+RUN go get -v ./...
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /whisper main.go
+
+## PKG
 FROM alpine
 
-COPY init.sh /init.sh 
+ENV WHISPER_BASE_UI_PATH "/www/"
+ENV WHISPER_SCOPES_FILE_PATH "/scopes.json"
+ENV WHISPER_PORT ""
+ENV WHISPER_DATABASE_URL ""
+ENV WHISPER_HYDRA_ENDPOINT ""
+ENV WHISPER_HYDRA_CLIENT_ID ""
+ENV WHISPER_HYDRA_CLIENT_SECRET ""
 
-RUN chmod +x init.sh
+RUN mkdir -p ${WHISPER_BASE_UI_PATH}}
+
+COPY --from=builder /whisper /
+COPY web/ui/www/ /www/
+COPY scopes.json /scopes.json
+
+CMD [ "/whisper", "serve" ]
