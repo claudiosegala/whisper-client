@@ -1,0 +1,6 @@
+version: '3.5'
+
+services:
+  hydra-init-client:
+    build: .
+    image: hydra-init-client:0.0.1
