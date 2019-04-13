@@ -1,13 +1,13 @@
 # BUILD
 FROM abilioesteves/gowebbuilder:unstable as builder
 
-ENV p $GOPATH/src/github.com/abilioesteves/whisper
+ENV p $GOPATH/src/github.com/abilioesteves/whisper-client
 
 ADD ./ ${p}
 WORKDIR ${p}
 RUN go get -v ./...
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /whisper main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /whisper-client main.go
 
 ## PKG
 FROM alpine

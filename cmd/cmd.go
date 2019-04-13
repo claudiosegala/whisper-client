@@ -15,8 +15,8 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "hydra-init-client",
-	Short: "An utility for performing an oauth2 client-credentials flow with Hydra",
+	Use:   "whisper-client",
+	Short: "An utility for performing an oauth2 client-credentials flow with Hydra to be used with Whisper",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		flags := new(config.Flags).InitFromViper(viper.GetViper())
 		whisperClient := new(client.WhisperClient).InitFromFlags(flags)
