@@ -18,14 +18,14 @@ type WhisperClient struct {
 // InitFromFlags initialize a whisper client from flags
 func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
 	client.Flags = flags
-	client.HydraClient = new(hydra.Client).Init(flags.HydraAdminURL, flags.HydraPublicURL)
+	client.HydraClient = new(hydra.Client).Init(flags.HydraAdminURL, flags.HydraPublicURL, client.Scopes)
 
 	return client
 }
 
 // InitFromParams initializes a whisper client from normal params
 func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes []string) *WhisperClient {
-	client.HydraClient = new(hydra.Client).Init(hydraAdminURL, hydraPublicURL)
+	client.HydraClient = new(hydra.Client).Init(hydraAdminURL, hydraPublicURL, scopes)
 	client.ClientID = clientID
 	client.ClientSecret = clientSecret
 	client.HydraAdminURL = hydraAdminURL
