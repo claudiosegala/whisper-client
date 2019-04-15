@@ -15,7 +15,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/abilioesteves/goh/gohclient"
+	"github.com/labbsr0x/goh/gohclient"
 )
 
 // Client holds data and methods to communicate with an hydra service instance

@@ -51,7 +51,7 @@ func Run(cmd *cobra.Command, args []string) error {
 	whisperClient := new(client.WhisperClient).InitFromFlags(flags)
 	t, err := whisperClient.CheckCredentials()
 	if err == nil { // store token
-		whisperClient.StoreTokenAsJSON(t)
+		return whisperClient.StoreTokenAsJSON(t)
 	}
 	return err
 }

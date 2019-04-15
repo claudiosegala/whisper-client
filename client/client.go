@@ -54,9 +54,10 @@ func (client *WhisperClient) CheckCredentials() (t *oauth2.Token, err error) {
 }
 
 // StoreTokenAsJSON stores the token in the environment variables as a json string
-func (client *WhisperClient) StoreTokenAsJSON(t *oauth2.Token) {
+func (client *WhisperClient) StoreTokenAsJSON(t *oauth2.Token) error {
 	buf := new(bytes.Buffer)
 	enc := json.NewEncoder(buf)
 	enc.Encode(t)
-	os.Setenv(string(config.WhisperTokenEnvKey), buf.String())
+	logrus.Debugf("%v: %v", config.WhisperTokenEnvKey, buf.String())
+	return os.Setenv(string(config.WhisperTokenEnvKey), buf.String())
 }
