@@ -52,7 +52,7 @@ func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
 	flags.HydraAdminURL = v.GetString(hydraAdminURL)
 	flags.HydraPublicURL = v.GetString(hydraPublicURL)
 	flags.LogLevel = v.GetString(logLevel)
-	flags.Scopes = append(strings.Split(v.GetString(scopes), ","), "introspect_token")
+	flags.Scopes = strings.Split(v.GetString(scopes), ",")
 
 	flags.check()
 
