@@ -18,14 +18,14 @@ type WhisperClient struct {
 // InitFromFlags initialize a whisper client from flags
 func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
 	client.Flags = flags
-	client.HydraClient = new(hydra.Client).Init(flags.HydraAdminURL, flags.HydraPublicURL, client.Scopes)
+	client.HydraClient = new(hydra.Client).Init(flags.HydraAdminURL, flags.HydraPublicURL, flags.ClientID, flags.ClientSecret, client.Scopes)
 
 	return client
 }
 
 // InitFromParams initializes a whisper client from normal params
 func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes []string) *WhisperClient {
-	client.HydraClient = new(hydra.Client).Init(hydraAdminURL, hydraPublicURL, scopes)
+	client.HydraClient = new(hydra.Client).Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret, scopes)
 	client.ClientID = clientID
 	client.ClientSecret = clientSecret
 	client.HydraAdminURL = hydraAdminURL
@@ -37,14 +37,14 @@ func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clien
 
 // CheckCredentials talks to hydra and checks wheather the client_id should be created
 func (client *WhisperClient) CheckCredentials() (t *oauth2.Token, err error) {
-	hc, err := client.HydraClient.GetOAuth2Client(client.ClientID)
+	hc, err := client.HydraClient.GetOAuth2Client()
 
 	if err == nil && hc == nil { // NOT FOUND; Client should be created
-		hc, err = client.HydraClient.CreateOAuth2Client(client.ClientID, client.ClientSecret, client.Scopes)
+		hc, err = client.HydraClient.CreateOAuth2Client()
 	}
 
 	if err == nil {
-		t, err = client.HydraClient.DoClientCredentialsFlow(client.ClientID, client.ClientSecret, client.Scopes)
+		t, err = client.HydraClient.DoClientCredentialsFlow()
 	}
 
 	return t, err
