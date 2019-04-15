@@ -35,6 +35,18 @@ func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clien
 	return client
 }
 
+// InitFromHydraClient initializes a whisper client from a hydra client
+func (client *WhisperClient) InitFromHydraClient(hydraClient *hydra.Client) *WhisperClient {
+	client.HydraClient = hydraClient
+	client.ClientID = hydraClient.ClientID
+	client.ClientSecret = hydraClient.ClientSecret
+	client.HydraAdminURL = hydraClient.AdminURL.String()
+	client.HydraPublicURL = hydraClient.PublicURL.String()
+	client.Scopes = hydraClient.Scopes
+
+	return client
+}
+
 // CheckCredentials talks to hydra and checks wheather the client_id should be created
 func (client *WhisperClient) CheckCredentials() (t *oauth2.Token, err error) {
 	hc, err := client.HydraClient.GetOAuth2Client()
