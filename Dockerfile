@@ -12,18 +12,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /whisper-client m
 ## PKG
 FROM alpine
 
-ENV WHISPER_BASE_UI_PATH "/www/"
-ENV WHISPER_SCOPES_FILE_PATH "/scopes.json"
-ENV WHISPER_PORT ""
-ENV WHISPER_DATABASE_URL ""
-ENV WHISPER_HYDRA_ENDPOINT ""
-ENV WHISPER_HYDRA_CLIENT_ID ""
-ENV WHISPER_HYDRA_CLIENT_SECRET ""
+COPY --from=builder /whisper-client /
 
-RUN mkdir -p ${WHISPER_BASE_UI_PATH}}
-
-COPY --from=builder /whisper /
-COPY web/ui/www/ /www/
-COPY scopes.json /scopes.json
-
-CMD [ "/whisper", "serve" ]
+CMD [ "/whisper-client"]
