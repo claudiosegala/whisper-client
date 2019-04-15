@@ -3,4 +3,4 @@ version: '3.5'
 services:
   whisper-client:
     build: .
-    image: whisper-client:0.0.1
+    image: abilioesteves/whisper-client:0.0.1

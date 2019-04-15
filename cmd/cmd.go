@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -51,7 +52,8 @@ func Run(cmd *cobra.Command, args []string) error {
 	whisperClient := new(client.WhisperClient).InitFromFlags(flags)
 	t, err := whisperClient.CheckCredentials()
 	if err == nil { // store token
-		return whisperClient.StoreTokenAsJSON(t)
+		tokenJSONString := whisperClient.GetTokenAsJSONStr(t)
+		fmt.Printf(tokenJSONString)
 	}
 	return err
 }
