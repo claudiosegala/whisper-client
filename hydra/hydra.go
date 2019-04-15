@@ -23,13 +23,15 @@ type Client struct {
 	AdminURL   *url.URL
 	PublicURL  *url.URL
 	HTTPClient *gohclient.Default
+	Scopes     []string
 }
 
 // Init initializes a hydra client
-func (client *Client) Init(hydraAdminURL, hydraPublicURL string) *Client {
+func (client *Client) Init(hydraAdminURL, hydraPublicURL string, scopes []string) *Client {
 	client.AdminURL, _ = url.Parse(hydraAdminURL)
 	client.PublicURL, _ = url.Parse(hydraPublicURL)
 	client.HTTPClient = gohclient.New("application/json", "application/json")
+	client.Scopes = scopes
 
 	logrus.Infof("Hydra enpoints - Admin: '%v' - Public: '%v'", client.AdminURL.String(), client.PublicURL.String())
 	return client
