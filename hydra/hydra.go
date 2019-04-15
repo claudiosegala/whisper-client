@@ -41,7 +41,7 @@ func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret
 }
 
 // IntrospectToken calls hydra to introspect a access or refresh token
-func (client *Client) IntrospectToken(token string) (result HydraToken, err error) {
+func (client *Client) IntrospectToken(token string) (result Token, err error) {
 	u, _ := url.Parse(client.AdminURL.String())
 	u.Path = path.Join(u.Path, "/oauth2/introspect/")
 	payloadData, _ := json.Marshal(IntrospectTokenRequestPayload{Token: token, Scope: strings.Join(client.Scopes, " ")})
