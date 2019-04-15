@@ -1,8 +1,8 @@
 package client
 
 import (
-	"github.com/abilioesteves/hydra-init-client/config"
-	"github.com/abilioesteves/hydra-init-client/hydra"
+	"github.com/abilioesteves/whisper-client/config"
+	"github.com/abilioesteves/whisper-client/hydra"
 )
 
 // WhisperClient holds the info and structures a whisper client must

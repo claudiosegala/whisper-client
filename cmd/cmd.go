@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/abilioesteves/hydra-init-client/client"
+	"github.com/abilioesteves/whisper-client/client"
 
-	"github.com/abilioesteves/hydra-init-client/config"
+	"github.com/abilioesteves/whisper-client/config"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
