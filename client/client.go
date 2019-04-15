@@ -3,11 +3,9 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"os"
 
 	"github.com/abilioesteves/whisper-client/config"
 	"github.com/abilioesteves/whisper-client/hydra"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -47,17 +45,15 @@ func (client *WhisperClient) CheckCredentials() (t *oauth2.Token, err error) {
 
 	if err == nil {
 		t, err = client.HydraClient.DoClientCredentialsFlow(client.ClientID, client.ClientSecret, client.Scopes)
-		logrus.Debugf("Client access token: '%v'", t)
 	}
 
 	return t, err
 }
 
-// StoreTokenAsJSON stores the token in the environment variables as a json string
-func (client *WhisperClient) StoreTokenAsJSON(t *oauth2.Token) error {
+// GetTokenAsJSONStr stores the token in the environment variables as a json string
+func (client *WhisperClient) GetTokenAsJSONStr(t *oauth2.Token) string {
 	buf := new(bytes.Buffer)
 	enc := json.NewEncoder(buf)
 	enc.Encode(t)
-	logrus.Debugf("%v: %v", config.WhisperTokenEnvKey, buf.String())
-	return os.Setenv(string(config.WhisperTokenEnvKey), buf.String())
+	return buf.String()
 }
