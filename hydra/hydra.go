@@ -36,7 +36,7 @@ func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret
 	client.Scopes = scopes
 	client.ClientID = clientID
 	client.ClientSecret = clientSecret
-	logrus.Infof("Hydra enpoints - Admin: '%v' - Public: '%v'", client.AdminURL.String(), client.PublicURL.String())
+	logrus.Debugf("Hydra enpoints - Admin: '%v' - Public: '%v'", client.AdminURL.String(), client.PublicURL.String())
 	return client
 }
 
