@@ -25,24 +25,25 @@ func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
 
 // InitFromParams initializes a whisper client from normal params
 func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes []string) *WhisperClient {
-	client.HydraClient = new(hydra.Client).Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret, scopes)
-	client.ClientID = clientID
-	client.ClientSecret = clientSecret
-	client.HydraAdminURL = hydraAdminURL
-	client.HydraPublicURL = hydraPublicURL
-	client.Scopes = scopes
-
-	return client
+	return client.InitFromFlags(&config.Flags{
+		ClientID:       clientID,
+		ClientSecret:   clientSecret,
+		HydraAdminURL:  hydraAdminURL,
+		HydraPublicURL: hydraPublicURL,
+		Scopes:         scopes,
+	})
 }
 
 // InitFromHydraClient initializes a whisper client from a hydra client
 func (client *WhisperClient) InitFromHydraClient(hydraClient *hydra.Client) *WhisperClient {
 	client.HydraClient = hydraClient
-	client.ClientID = hydraClient.ClientID
-	client.ClientSecret = hydraClient.ClientSecret
-	client.HydraAdminURL = hydraClient.AdminURL.String()
-	client.HydraPublicURL = hydraClient.PublicURL.String()
-	client.Scopes = hydraClient.Scopes
+	client.Flags = &config.Flags{
+		ClientID:       hydraClient.ClientID,
+		ClientSecret:   hydraClient.ClientSecret,
+		HydraAdminURL:  hydraClient.AdminURL.String(),
+		HydraPublicURL: hydraClient.PublicURL.String(),
+		Scopes:         hydraClient.Scopes,
+	}
 
 	return client
 }
