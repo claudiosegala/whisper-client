@@ -2,8 +2,8 @@ package hydra
 
 import "net/http"
 
-// HydraToken holds a hydra token's data
-type HydraToken struct {
+// Token holds a hydra token's data
+type Token struct {
 	Active            bool                   `json:"active"`
 	Audiences         []string               `json:"aud,omitempty"`
 	ClientID          string                 `json:"client_id"`
