@@ -65,6 +65,9 @@ ENTRYPOINT ["/whisper-client", " > ", "token.json"]
 
 ```
 
+To avoid defining multiple same-purpose environment variables, use the `CLIENT_ENV_PREFIX` environment variable to reuse them in your app and `whisper-client` utility.
+
+
 
 
 
