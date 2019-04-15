@@ -1,5 +1,7 @@
 package hydra
 
+import "net/http"
+
 // HydraToken holds a hydra token's data
 type HydraToken struct {
 	Active            bool                   `json:"active"`
@@ -48,10 +50,34 @@ type RejectConsentRequestPayload struct {
 
 // OAuth2Client holds the data of an oauth2 hydra client
 type OAuth2Client struct {
-	AllowedCorsOrigins []string `json:"allowed_cors_origins"`
-	Audience           []string `json:"audience"`
-	ClientID           string   `json:"client_id"`
-	ClientName         string   `json:"client_name"`
-	ClientSecret       string   `json:"client_secret"`
-	ClientURI          string   `json:"client_uri"`
+	AllowedCorsOrigins      []string `json:"allowed_cors_origins"`
+	Audience                []string `json:"audience"`
+	ClientID                string   `json:"client_id"`
+	ClientName              string   `json:"client_name"`
+	ClientSecret            string   `json:"client_secret,omitempty"`
+	ClientURI               string   `json:"client_uri"`
+	TokenEndpointAuthMethod string   `json:"token_endpoint_auth_method"`
+	Scopes                  string   `json:"scope"`
+	GrantTypes              []string `json:"grant_types"`
+}
+
+// IntrospectTokenRequestPayload holds the data to communicate with hydra's introspect token api
+type IntrospectTokenRequestPayload struct {
+	Token string `json:"token"`
+	Scope string `json:"scope"`
+}
+
+// Transporter to enable the definition of a FakeTLSTermination
+type Transporter struct {
+	*http.Transport
+	FakeTLSTermination bool
+}
+
+// RoundTrip overwrites the parent transport round trip to enable/disable fake tls termination
+func (t *Transporter) RoundTrip(req *http.Request) (*http.Response, error) {
+	if t.FakeTLSTermination {
+		req.Header.Set("X-Forwarded-Proto", "https")
+	}
+
+	return t.Transport.RoundTrip(req)
 }

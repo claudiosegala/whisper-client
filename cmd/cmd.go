@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/abilioesteves/whisper-client/client"
 
@@ -17,18 +18,14 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "whisper-client",
 	Short: "An utility for performing an oauth2 client-credentials flow with Hydra to be used with Whisper",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		flags := new(config.Flags).InitFromViper(viper.GetViper())
-		whisperClient := new(client.WhisperClient).InitFromFlags(flags)
-		return whisperClient.CheckCredentials()
-	},
+	RunE:  Run,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		logrus.Error(err)
 		os.Exit(1)
 	}
 }
@@ -46,4 +43,15 @@ func initConfig() {
 	viper.SetEnvPrefix(os.Getenv("CLIENT_ENV_PREFIX")) // all
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	viper.AutomaticEnv() // read in environment variables that match
+}
+
+// Run defines what should happen when the user runs 'whisper-client'
+func Run(cmd *cobra.Command, args []string) error {
+	flags := new(config.Flags).InitFromViper(viper.GetViper())
+	whisperClient := new(client.WhisperClient).InitFromFlags(flags)
+	t, err := whisperClient.CheckCredentials()
+	if err == nil { // store token
+		whisperClient.StoreTokenAsJSON(t)
+	}
+	return err
 }
