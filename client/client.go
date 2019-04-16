@@ -40,8 +40,8 @@ func (client *WhisperClient) InitFromHydraClient(hydraClient *hydra.Client) *Whi
 	client.Flags = &config.Flags{
 		ClientID:       hydraClient.ClientID,
 		ClientSecret:   hydraClient.ClientSecret,
-		HydraAdminURL:  hydraClient.AdminURL.String(),
-		HydraPublicURL: hydraClient.PublicURL.String(),
+		HydraAdminURL:  hydraClient.Admin.BaseURL.String(),
+		HydraPublicURL: hydraClient.Public.BaseURL.String(),
 		Scopes:         hydraClient.Scopes,
 		RedirectURIs:   hydraClient.RedirectURIs,
 	}

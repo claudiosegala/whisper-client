@@ -20,9 +20,8 @@ import (
 
 // Client holds data and methods to communicate with an hydra service instance
 type Client struct {
-	AdminURL     *url.URL
-	PublicURL    *url.URL
-	HTTPClient   *gohclient.Default
+	Public       *gohclient.Default
+	Admin        *gohclient.Default
 	Scopes       []string
 	ClientID     string
 	ClientSecret string
@@ -31,9 +30,13 @@ type Client struct {
 
 // Init initializes a hydra client
 func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *Client {
-	client.AdminURL, _ = url.Parse(hydraAdminURL)
-	client.PublicURL, _ = url.Parse(hydraPublicURL)
-	client.HTTPClient = gohclient.New("application/json", "application/json")
+	client.Public, _ = gohclient.New(nil, hydraPublicURL)
+	client.Admin, _ = gohclient.New(nil, hydraAdminURL)
+	client.Public.ContentType = "application/json"
+	client.Admin.ContentType = "application/json"
+	client.Public.Accept = "application/json"
+	client.Admin.Accept = "application/json"
+
 	client.Scopes = scopes
 	client.ClientID = clientID
 	client.ClientSecret = clientSecret
@@ -43,12 +46,11 @@ func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret
 
 // IntrospectToken calls hydra to introspect a access or refresh token
 func (client *Client) IntrospectToken(token string) (result Token, err error) {
-	u, _ := url.Parse(client.AdminURL.String())
-	u.Path = path.Join(u.Path, "/oauth2/introspect/")
+	p := path.Join(client.Admin.BaseURL.Path, "/oauth2/introspect/")
 	payloadData, _ := json.Marshal(IntrospectTokenRequestPayload{Token: token, Scope: strings.Join(client.Scopes, " ")})
 
-	logrus.Debugf("IntrospectToken - url: '%v' - payload: '%v'", u.String(), payloadData)
-	resp, data, err := client.HTTPClient.Post(u.String(), payloadData)
+	logrus.Debugf("IntrospectToken - POST payload: '%v'", payloadData)
+	resp, data, err := client.Admin.Post(p, payloadData)
 	if err == nil && resp != nil && resp.StatusCode == 200 {
 		err = json.Unmarshal(data, &result)
 	}
@@ -57,11 +59,10 @@ func (client *Client) IntrospectToken(token string) (result Token, err error) {
 
 // GetOAuth2Client calls hydra to get a clients information
 func (client *Client) GetOAuth2Client() (result *OAuth2Client, err error) {
-	u, _ := url.Parse(client.AdminURL.String())
-	u.Path = path.Join(u.Path, "/clients/", client.ClientID)
+	p := path.Join(client.Admin.BaseURL.Path, "/clients/", client.ClientID)
 
-	logrus.Debugf("GetOAuth2Client - url: '%v'", u.String())
-	resp, data, err := client.HTTPClient.Get(u.String())
+	logrus.Debugf("GetOAuth2Client - GET '%v'", client.ClientID)
+	resp, data, err := client.Admin.Get(p)
 	if err == nil && resp != nil && resp.StatusCode == 200 {
 		err = json.Unmarshal(data, &result)
 	}
@@ -70,8 +71,7 @@ func (client *Client) GetOAuth2Client() (result *OAuth2Client, err error) {
 
 // CreateOAuth2Client calls hydra to create an oauth2 client
 func (client *Client) CreateOAuth2Client() (result *OAuth2Client, err error) {
-	u, _ := url.Parse(client.AdminURL.String())
-	u.Path = path.Join(u.Path, "/clients")
+	p := path.Join(client.Admin.BaseURL.Path, "/clients")
 	payloadData, _ := json.Marshal(
 		OAuth2Client{
 			ClientID:                client.ClientID,
@@ -82,8 +82,8 @@ func (client *Client) CreateOAuth2Client() (result *OAuth2Client, err error) {
 			RedirectURIs:            client.RedirectURIs,
 		})
 
-	logrus.Debugf("CreateOAuth2Client - url: '%v' - payload: '%v'", u.String(), payloadData)
-	resp, data, err := client.HTTPClient.Post(u.String(), payloadData)
+	logrus.Debugf("CreateOAuth2Client - POST payload: '%v'", payloadData)
+	resp, data, err := client.Admin.Post(p, payloadData)
 	if err == nil {
 		if resp != nil {
 			if resp.StatusCode == 201 {
@@ -110,7 +110,7 @@ func (client *Client) DoClientCredentialsFlow() (t *oauth2.Token, err error) {
 		},
 	})
 
-	u, _ := url.Parse(client.PublicURL.String())
+	u, _ := url.Parse(client.Public.BaseURL.String())
 	u.Path = path.Join(u.Path, "/oauth2/token")
 	oauthConfig := clientcredentials.Config{
 		ClientID:     client.ClientID,
