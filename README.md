@@ -5,7 +5,7 @@ Defines a script and a library to be used when initializing a client app that co
 
 This script/lib takes care of creating the Hydra client in case it does not exist.
 
-Given that, when firing up your client app, you'll need to provide a `client-id`, a `client-secret` and Hydra's endpoints `hydra-admin-url` and `hydra-public-url`. 
+Given that, when firing up your client app, you'll need to provide a `client-id`, a `client-secret`, a list of allowed `redirect-uris` and Hydra's endpoints `hydra-admin-url` and `hydra-public-url`. 
 
 The scopes that your application is able to ask for when issuing tokens are set via the `scopes` variable.
 
@@ -41,7 +41,7 @@ if err == nil {
 The following command should get you started:
 
 ```
-./whisper-client --client-id teste --client-secret teste123 --hydra-admin-url http://localhost:4445/ --hydra-public-url http://localhost:4444/ > token.json
+./whisper-client --client-id teste --client-secret teste123 --hydra-admin-url http://localhost:4445/ --hydra-public-url http://localhost:4444/ --redirect-uris http://test.com,http://test1.com  > token.json
 ```
 The command above will store the generated token as a file called `token.json`.
 
