@@ -59,6 +59,7 @@ type OAuth2Client struct {
 	TokenEndpointAuthMethod string   `json:"token_endpoint_auth_method"`
 	Scopes                  string   `json:"scope"`
 	GrantTypes              []string `json:"grant_types"`
+	RedirectURIs            []string `json:"redirect_uris"`
 }
 
 // IntrospectTokenRequestPayload holds the data to communicate with hydra's introspect token api
