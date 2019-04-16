@@ -24,13 +24,14 @@ func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
 }
 
 // InitFromParams initializes a whisper client from normal params
-func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes []string) *WhisperClient {
+func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *WhisperClient {
 	return client.InitFromFlags(&config.Flags{
 		ClientID:       clientID,
 		ClientSecret:   clientSecret,
 		HydraAdminURL:  hydraAdminURL,
 		HydraPublicURL: hydraPublicURL,
 		Scopes:         scopes,
+		RedirectURIs:   redirectURIs,
 	})
 }
 
