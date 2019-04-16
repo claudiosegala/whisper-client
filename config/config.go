@@ -45,7 +45,7 @@ func AddFlags(flags *pflag.FlagSet) {
 	flags.String(clientSecret, "", "The client secret for this app, in terms of oauth2 client credentials. Must be at least 6 characters long")
 	flags.String(logLevel, "info", "[optional] The log level (trace, debug, info, warn, error, fatal, panic)")
 	flags.String(scopes, "", "[optional] A comma separated list of scopes the client can ask for")
-	flags.String(redirectURIs, "", "A comma separated list of possible redirect_uris this client can talk to when performing an oauth2 authorization code flow")
+	flags.String(redirectURIs, "", "[optional] A comma separated list of possible redirect_uris this client can talk to when performing an oauth2 authorization code flow")
 }
 
 // InitFromViper initializes the flags from Viper.
@@ -73,10 +73,6 @@ func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
 func (flags *Flags) check() {
 	if flags.ClientID == "" || flags.ClientSecret == "" || flags.HydraAdminURL == "" || flags.HydraPublicURL == "" {
 		panic("client-id, client-secret, hydra-admin-url and hydra-public-url cannot be empty")
-	}
-
-	if len(flags.RedirectURIs) == 0 {
-		panic("at least one redirect uri must be provided")
 	}
 
 	if len(flags.ClientSecret) < 6 {
