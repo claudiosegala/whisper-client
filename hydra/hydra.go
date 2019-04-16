@@ -26,16 +26,18 @@ type Client struct {
 	Scopes       []string
 	ClientID     string
 	ClientSecret string
+	RedirectURIs []string
 }
 
 // Init initializes a hydra client
-func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes []string) *Client {
+func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *Client {
 	client.AdminURL, _ = url.Parse(hydraAdminURL)
 	client.PublicURL, _ = url.Parse(hydraPublicURL)
 	client.HTTPClient = gohclient.New("application/json", "application/json")
 	client.Scopes = scopes
 	client.ClientID = clientID
 	client.ClientSecret = clientSecret
+	client.RedirectURIs = redirectURIs
 	return client
 }
 
@@ -76,7 +78,9 @@ func (client *Client) CreateOAuth2Client() (result *OAuth2Client, err error) {
 			ClientSecret:            client.ClientSecret,
 			TokenEndpointAuthMethod: "client_secret_post",
 			Scopes:                  strings.Join(client.Scopes, " "),
-			GrantTypes:              []string{"client_credentials", "authorization_code", "refresh_token"}})
+			GrantTypes:              []string{"client_credentials", "authorization_code", "refresh_token"},
+			RedirectURIs:            client.RedirectURIs,
+		})
 
 	logrus.Debugf("CreateOAuth2Client - url: '%v' - payload: '%v'", u.String(), payloadData)
 	resp, data, err := client.HTTPClient.Post(u.String(), payloadData)

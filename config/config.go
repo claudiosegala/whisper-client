@@ -23,6 +23,7 @@ const (
 	clientSecret   = "client-secret"
 	logLevel       = "log-level"
 	scopes         = "scopes"
+	redirectURIs   = "redirect-uris"
 )
 
 // Flags define the fields that will be passed via cmd
@@ -33,6 +34,7 @@ type Flags struct {
 	ClientSecret   string
 	LogLevel       string
 	Scopes         []string
+	RedirectURIs   []string
 }
 
 // AddFlags adds flags for Builder.
@@ -41,8 +43,9 @@ func AddFlags(flags *pflag.FlagSet) {
 	flags.String(hydraPublicURL, "", "The Hydra Public Endpoint")
 	flags.String(clientID, "", "The client ID for this app. If hydra doesn't recognize this ID, it will be created as is. If creation fails, execution of this utility panics.")
 	flags.String(clientSecret, "", "The client secret for this app, in terms of oauth2 client credentials. Must be at least 6 characters long")
-	flags.String(logLevel, "info", "The log level (trace, debug, info, warn, error, fatal, panic)")
-	flags.String(scopes, "", "A comma separated list of scopes the client can ask for")
+	flags.String(logLevel, "info", "[optional] The log level (trace, debug, info, warn, error, fatal, panic)")
+	flags.String(scopes, "", "[optional] A comma separated list of scopes the client can ask for")
+	flags.String(redirectURIs, "", "A comma separated list of possible redirect_uris this client can talk to when performing an oauth2 authorization code flow")
 }
 
 // InitFromViper initializes the flags from Viper.
@@ -53,6 +56,7 @@ func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
 	flags.HydraPublicURL = v.GetString(hydraPublicURL)
 	flags.LogLevel = v.GetString(logLevel)
 	flags.Scopes = strings.Split(v.GetString(scopes), ",")
+	flags.RedirectURIs = strings.Split(v.GetString(redirectURIs), ",")
 
 	flags.check()
 
@@ -69,6 +73,10 @@ func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
 func (flags *Flags) check() {
 	if flags.ClientID == "" || flags.ClientSecret == "" || flags.HydraAdminURL == "" || flags.HydraPublicURL == "" {
 		panic("client-id, client-secret, hydra-admin-url and hydra-public-url cannot be empty")
+	}
+
+	if len(flags.RedirectURIs) == 0 {
+		panic("at least one redirect uri must be provided")
 	}
 
 	if len(flags.ClientSecret) < 6 {

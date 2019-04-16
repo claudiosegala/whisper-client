@@ -18,7 +18,7 @@ type WhisperClient struct {
 // InitFromFlags initialize a whisper client from flags
 func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
 	client.Flags = flags
-	client.HydraClient = new(hydra.Client).Init(flags.HydraAdminURL, flags.HydraPublicURL, flags.ClientID, flags.ClientSecret, client.Scopes)
+	client.HydraClient = new(hydra.Client).Init(flags.HydraAdminURL, flags.HydraPublicURL, flags.ClientID, flags.ClientSecret, client.Scopes, flags.RedirectURIs)
 
 	return client
 }
@@ -43,6 +43,7 @@ func (client *WhisperClient) InitFromHydraClient(hydraClient *hydra.Client) *Whi
 		HydraAdminURL:  hydraClient.AdminURL.String(),
 		HydraPublicURL: hydraClient.PublicURL.String(),
 		Scopes:         hydraClient.Scopes,
+		RedirectURIs:   hydraClient.RedirectURIs,
 	}
 
 	return client
