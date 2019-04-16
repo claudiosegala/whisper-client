@@ -7,7 +7,6 @@ import (
 	"path"
 
 	"github.com/labbsr0x/goh/gohtypes"
-	"github.com/sirupsen/logrus"
 )
 
 // GetLoginRequestInfo retrieves information to drive decisions over how to deal with the login request
@@ -39,17 +38,13 @@ func (client *Client) RejectConsentRequest(challenge string, payload RejectConse
 }
 
 func (client *Client) get(flow, challenge string) map[string]interface{} {
-	u, _ := url.Parse(client.AdminURL.String())
-	u.Path = path.Join(u.Path, "/oauth2/auth/requests/", flow, url.QueryEscape(challenge))
-	logrus.Debugf("url: '%v'", u.String())
-	return client.treatResponse(client.HTTPClient.Get(u.String()))
+	p := path.Join(client.Admin.BaseURL.Path, "/oauth2/auth/requests/", flow, url.QueryEscape(challenge))
+	return client.treatResponse(client.Admin.Get(p))
 }
 
 func (client *Client) put(flow, challenge, action string, data []byte) map[string]interface{} {
-	u, _ := url.Parse(client.AdminURL.String())
-	u.Path = path.Join(u.Path, "/oauth2/auth/requests/", flow, url.QueryEscape(challenge), action)
-	logrus.Debugf("url: '%v'", u.String())
-	return client.treatResponse(client.HTTPClient.Put(u.String(), data))
+	p := path.Join(client.Admin.BaseURL.Path, "/oauth2/auth/requests/", flow, url.QueryEscape(challenge), action)
+	return client.treatResponse(client.Admin.Put(p, data))
 }
 
 func (client *Client) treatResponse(resp *http.Response, data []byte, err error) map[string]interface{} {
