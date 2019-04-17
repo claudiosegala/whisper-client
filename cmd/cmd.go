@@ -7,9 +7,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/abilioesteves/whisper-client/client"
+	"github.com/labbsr0x/whisper-client/client"
 
-	"github.com/abilioesteves/whisper-client/config"
+	"github.com/labbsr0x/whisper-client/config"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
