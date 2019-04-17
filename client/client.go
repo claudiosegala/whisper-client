@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/abilioesteves/whisper-client/config"
-	"github.com/abilioesteves/whisper-client/hydra"
+	"github.com/labbsr0x/whisper-client/config"
+	"github.com/labbsr0x/whisper-client/hydra"
 	"golang.org/x/oauth2"
 )
 
