@@ -1,7 +1,10 @@
 package config
 
 import (
+	"net/url"
 	"strings"
+
+	"github.com/labbsr0x/goh/gohtypes"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
@@ -28,8 +31,8 @@ const (
 
 // Flags define the fields that will be passed via cmd
 type Flags struct {
-	HydraAdminURL  string
-	HydraPublicURL string
+	HydraAdminURL  *url.URL
+	HydraPublicURL *url.URL
 	ClientID       string
 	ClientSecret   string
 	LogLevel       string
@@ -39,24 +42,28 @@ type Flags struct {
 
 // AddFlags adds flags for Builder.
 func AddFlags(flags *pflag.FlagSet) {
-	flags.String(hydraAdminURL, "", "The Hydra Admin Endpoint")
-	flags.String(hydraPublicURL, "", "The Hydra Public Endpoint")
+	flags.String(hydraAdminURL, "", "The Hydra Admin Endpoint for creating client apps.")
+	flags.String(hydraPublicURL, "", "The Hydra Public Endpoint for firing up authorization flows.")
 	flags.String(clientID, "", "The client ID for this app. If hydra doesn't recognize this ID, it will be created as is. If creation fails, execution of this utility panics.")
-	flags.String(clientSecret, "", "The client secret for this app, in terms of oauth2 client credentials. Must be at least 6 characters long")
-	flags.String(logLevel, "info", "[optional] The log level (trace, debug, info, warn, error, fatal, panic)")
-	flags.String(scopes, "", "[optional] A comma separated list of scopes the client can ask for")
-	flags.String(redirectURIs, "", "[optional] A comma separated list of possible redirect_uris this client can talk to when performing an oauth2 authorization code flow")
+	flags.String(clientSecret, "", "The client secret for this app, in terms of oauth2 client credentials. Must be at least 6 characters long.")
+	flags.String(logLevel, "info", "[optional] The log level (trace, debug, info, warn, error, fatal, panic).")
+	flags.String(scopes, "", "[optional] A comma separated list of scopes the client can ask for.")
+	flags.String(redirectURIs, "", "[optional] A comma separated list of possible redirect_uris this client can talk to when performing an oauth2 authorization code flow.")
 }
 
 // InitFromViper initializes the flags from Viper.
 func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
+	var err error
 	flags.ClientID = v.GetString(clientID)
 	flags.ClientSecret = v.GetString(clientSecret)
-	flags.HydraAdminURL = v.GetString(hydraAdminURL)
-	flags.HydraPublicURL = v.GetString(hydraPublicURL)
 	flags.LogLevel = v.GetString(logLevel)
 	flags.Scopes = strings.Split(v.GetString(scopes), ",")
 	flags.RedirectURIs = strings.Split(v.GetString(redirectURIs), ",")
+
+	flags.HydraAdminURL, err = url.Parse(v.GetString(hydraAdminURL))
+	gohtypes.PanicIfError("Invalid whisper admin url", 500, err)
+	flags.HydraPublicURL, err = url.Parse(v.GetString(hydraPublicURL))
+	gohtypes.PanicIfError("Invalid whisper public url", 500, err)
 
 	flags.check()
 
@@ -71,7 +78,7 @@ func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
 }
 
 func (flags *Flags) check() {
-	if flags.ClientID == "" || flags.ClientSecret == "" || flags.HydraAdminURL == "" || flags.HydraPublicURL == "" {
+	if flags.ClientID == "" || flags.ClientSecret == "" || flags.HydraAdminURL.Host == "" || flags.HydraPublicURL.Host == "" {
 		panic("client-id, client-secret, hydra-admin-url and hydra-public-url cannot be empty")
 	}
 

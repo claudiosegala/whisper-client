@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"path"
 	"strings"
+
+	"github.com/labbsr0x/goh/gohtypes"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
@@ -30,8 +31,11 @@ type Client struct {
 
 // Init initializes a hydra client
 func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *Client {
-	client.Public, _ = gohclient.New(nil, hydraPublicURL)
-	client.Admin, _ = gohclient.New(nil, hydraAdminURL)
+	var err error
+	client.Public, err = gohclient.New(nil, hydraPublicURL)
+	gohtypes.PanicIfError("Invalid HydraPublicURL", 500, err)
+	client.Admin, err = gohclient.New(nil, hydraAdminURL)
+	gohtypes.PanicIfError("Invalid HydraAdminURL", 500, err)
 	client.Public.ContentType = "application/json"
 	client.Admin.ContentType = "application/json"
 	client.Public.Accept = "application/json"
@@ -110,8 +114,7 @@ func (client *Client) DoClientCredentialsFlow() (t *oauth2.Token, err error) {
 		},
 	})
 
-	u, _ := url.Parse(client.Public.BaseURL.String())
-	u.Path = path.Join(u.Path, "/oauth2/token")
+	u, _ := client.Public.BaseURL.Parse("/oauth2/token")
 	oauthConfig := clientcredentials.Config{
 		ClientID:     client.ClientID,
 		ClientSecret: client.ClientSecret,
