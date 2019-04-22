@@ -48,7 +48,7 @@ type RejectConsentRequestPayload struct {
 	ErrorDescription string `json:"error_description"`
 }
 
-// ConsentRequestInfo holds ory hydra's information with regards to a ConsentRequest
+// ConsentRequestInfo holds ory hydra's information with regards to a consent request
 type ConsentRequestInfo struct {
 	ACR                          string                 `json:"acr,omitempty"`
 	Challenge                    string                 `json:"challenge,omitempty"`
@@ -64,40 +64,88 @@ type ConsentRequestInfo struct {
 	Subject                      string                 `json:"subject,omitempty"`
 }
 
+// LoginRequestInfo holds ory hydra's information with regards to a login request
+type LoginRequestInfo struct {
+	Challenge                    string               `json:"challenge,omitempty"`
+	Client                       OAuth2Client         `json:"client,omitempty"`
+	OIDCContext                  OpenIDConnectContext `json:"oidc_context,omitempty"`
+	RequestURL                   string               `json:"request_url,omitempty"`
+	RequestedAccessTokenAudience []string             `json:"requested_access_token_audience,omitempty"`
+	RequestedScope               []string             `json:"requested_scope,omitempty"`
+	SessionID                    string               `json:"session_id,omitempty"`
+	Skip                         bool                 `json:"skip,omitempty"`
+	Subject                      string               `json:"subject,omitempty"`
+}
+
 // OAuth2Client holds the data of an oauth2 hydra client
 type OAuth2Client struct {
-	AllowedCorsOrigins        []string    `json:"allowed_cors_origins"`
-	Audience                  []string    `json:"audience"`
-	ClientID                  string      `json:"client_id"`
-	ClientName                string      `json:"client_name"`
-	ClientSecret              string      `json:"client_secret"`
-	ClientSecretExpiresAt     int64       `json:"client_secret_expires_at"`
-	ClientURI                 string      `json:"client_uri"`
-	Contacts                  []string    `json:"contacts"`
-	CreatedAt                 string      `json:"created_at"`
-	GrantTypes                []string    `json:"grant_types"`
-	JWKs                      interface{} `json:"jwks"`
-	JWKsURI                   string      `json:"jwks_uri"`
-	LogoURI                   string      `json:"logo_uri"`
-	Owner                     string      `json:"owner"`
-	PolicyURI                 string      `json:"policy_uri"`
-	RedirectURIs              []string    `json:"redirect_uris"`
-	RequestObjectSigningAlg   string      `json:"request_object_signing_alg"`
-	RequestURIs               []string    `json:"request_uris"`
-	ResponseTypes             []string    `json:"response_types"`
-	Scopes                    string      `json:"scope"`
-	SectorIdentifierURI       string      `json:"sector_identifier_uri"`
-	SubjectType               string      `json:"subject_type"`
-	TokenEndpointAuthMethod   string      `json:"token_endpoint_auth_method"`
-	TosURI                    string      `json:"tos_uri"`
-	UpdatedAt                 string      `json:"updated_at"`
-	UserinfoSignedResponseAlg string      `json:"userinfo_signed_response_alg"`
+	AllowedCorsOrigins        []string             `json:"allowed_cors_origins,omitempty"`
+	Audience                  []string             `json:"audience,omitempty"`
+	ClientID                  string               `json:"client_id,omitempty"`
+	ClientName                string               `json:"client_name,omitempty"`
+	ClientSecret              string               `json:"client_secret,omitempty"`
+	ClientSecretExpiresAt     int64                `json:"client_secret_expires_at,omitempty"`
+	ClientURI                 string               `json:"client_uri,omitempty"`
+	Contacts                  []string             `json:"contacts,omitempty"`
+	CreatedAt                 string               `json:"created_at,omitempty"`
+	GrantTypes                []string             `json:"grant_types,omitempty"`
+	JWKs                      SwaggerJSONWebKeySet `json:"jwks,omitempty"`
+	JWKsURI                   string               `json:"jwks_uri,omitempty"`
+	LogoURI                   string               `json:"logo_uri,omitempty"`
+	Owner                     string               `json:"owner,omitempty"`
+	PolicyURI                 string               `json:"policy_uri,omitempty"`
+	RedirectURIs              []string             `json:"redirect_uris,omitempty"`
+	RequestObjectSigningAlg   string               `json:"request_object_signing_alg,omitempty"`
+	RequestURIs               []string             `json:"request_uris,omitempty"`
+	ResponseTypes             []string             `json:"response_types,omitempty"`
+	Scopes                    string               `json:"scope,omitempty"`
+	SectorIdentifierURI       string               `json:"sector_identifier_uri,omitempty"`
+	SubjectType               string               `json:"subject_type,omitempty"`
+	TokenEndpointAuthMethod   string               `json:"token_endpoint_auth_method,omitempty"`
+	TosURI                    string               `json:"tos_uri,omitempty"`
+	UpdatedAt                 string               `json:"updated_at,omitempty"`
+	UserinfoSignedResponseAlg string               `json:"userinfo_signed_response_alg,omitempty"`
+}
+
+// OpenIDConnectContext optional information about the OpenID connect request
+type OpenIDConnectContext struct {
+	ACRValues         []string               `json:"acr_values,omitempty"`
+	Display           string                 `json:"display,omitempty"`
+	IDTokenHintClaims map[string]interface{} `json:"id_token_hint_claims,omitempty"`
+	LoginHint         string                 `json:"login_hint,omitempty"`
+	UILocales         []string               `json:"ui_locales,omitempty"`
 }
 
 // IntrospectTokenRequestPayload holds the data to communicate with hydra's introspect token api
 type IntrospectTokenRequestPayload struct {
 	Token string `json:"token"`
 	Scope string `json:"scope"`
+}
+
+// SwaggerJSONWebKeySet holds the information of a JSON Web Key Set
+type SwaggerJSONWebKeySet struct {
+	Keys []interface{} `json:"keys"`
+}
+
+// SwaggerJSONWebKey holds the informationf of a JSON Web key
+type SwaggerJSONWebKey struct {
+	ALG string   `json:"alg"`
+	CRV string   `json:"crv"`
+	D   string   `json:"d"`
+	DP  string   `json:"dp"`
+	DQ  string   `json:"dq"`
+	E   string   `json:"e"`
+	K   string   `json:"k"`
+	KID string   `json:"kid"`
+	KTY string   `json:"kty"`
+	N   string   `json:"n"`
+	P   string   `json:"p"`
+	Q   string   `json:"q"`
+	QI  string   `json:"qi"`
+	USE string   `json:"use"`
+	X   string   `json:"x"`
+	X5C []string `json:"x5c"`
+	Y   string   `json:"y"`
 }
 
 // Transporter to enable the definition of a FakeTLSTermination

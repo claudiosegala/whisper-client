@@ -41,7 +41,7 @@ func init() {
 }
 
 func initConfig() {
-	viper.SetEnvPrefix(os.Getenv("CLIENT_ENV_PREFIX")) // all
+	viper.SetEnvPrefix(os.Getenv("WHISPER_CLIENT_ENV_PREFIX")) // all
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	viper.AutomaticEnv() // read in environment variables that match
 }
