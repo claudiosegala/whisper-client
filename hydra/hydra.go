@@ -1,11 +1,13 @@
 package hydra
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 
@@ -50,11 +52,15 @@ func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret
 
 // IntrospectToken calls hydra to introspect a access or refresh token
 func (client *Client) IntrospectToken(token string) (result Token, err error) {
-	p := path.Join(client.Admin.BaseURL.Path, "/oauth2/introspect/")
-	payloadData, _ := json.Marshal(IntrospectTokenRequestPayload{Token: token, Scope: strings.Join(client.Scopes, " ")})
+	httpClient, err := gohclient.New(nil, client.Admin.BaseURL.String())
+	httpClient.ContentType = "application/x-www-form-urlencoded"
+	httpClient.Accept = "application/json"
 
+	payload := url.Values{"token": []string{token}, "scopes": client.Scopes}
+	payloadData := bytes.NewBufferString(payload.Encode()).Bytes()
 	logrus.Debugf("IntrospectToken - POST payload: '%v'", payloadData)
-	resp, data, err := client.Admin.Post(p, payloadData)
+
+	resp, data, err := httpClient.Post("/oauth2/introspect/", payloadData)
 	if err == nil && resp != nil && resp.StatusCode == 200 {
 		err = json.Unmarshal(data, &result)
 	}
