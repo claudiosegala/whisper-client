@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/url"
+	"reflect"
+	"strings"
 
 	"github.com/labbsr0x/goh/gohtypes"
 
@@ -67,7 +69,13 @@ func (client *WhisperClient) CheckCredentials() (t *oauth2.Token, err error) {
 	}
 
 	if err == nil {
-		t, err = client.hydraClient.DoClientCredentialsFlow()
+		if hc.Scopes != strings.Join(client.Scopes, " ") || !reflect.DeepEqual(hc.RedirectURIs, client.RedirectURIs) {
+			_, err = client.hydraClient.UpdateOAuth2Client()
+		}
+
+		if err == nil {
+			t, err = client.hydraClient.DoClientCredentialsFlow()
+		}
 	}
 
 	return t, err

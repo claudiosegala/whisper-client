@@ -109,6 +109,34 @@ func (client *Client) CreateOAuth2Client() (result *OAuth2Client, err error) {
 	return nil, err
 }
 
+// UpdateOAuth2Client updates the scopes and redirect urls of a registered oauth client
+func (client *Client) UpdateOAuth2Client() (result *OAuth2Client, err error) {
+	p := path.Join(client.Admin.BaseURL.Path, "/clients/", client.ClientID)
+	payloadData, _ := json.Marshal(
+		OAuth2Client{
+			ClientID:                client.ClientID,
+			ClientSecret:            client.ClientSecret,
+			Scopes:                  strings.Join(client.Scopes, " "),
+			TokenEndpointAuthMethod: "client_secret_post",
+			RedirectURIs:            client.RedirectURIs,
+			GrantTypes:              []string{"client_credentials", "authorization_code", "refresh_token"},
+		})
+
+	logrus.Debugf("UpdateOAuth2Client - PUT payload: '%v'", payloadData)
+	resp, data, err := client.Admin.Put(p, payloadData)
+	if err == nil {
+		if resp != nil {
+			if resp.StatusCode == 200 {
+				err = json.Unmarshal(data, &result)
+				return result, err
+			}
+			return nil, fmt.Errorf("Internal server error")
+		}
+		return nil, fmt.Errorf("Expecting response payload to be not null")
+	}
+	return nil, err
+}
+
 // DoClientCredentialsFlow calls hydra's oauth2/token and starts a client credentials flow
 func (client *Client) DoClientCredentialsFlow() (t *oauth2.Token, err error) {
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, &http.Client{
