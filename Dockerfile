@@ -14,4 +14,4 @@ FROM alpine
 
 COPY --from=builder /whisper-client /
 
-CMD [ "/whisper-client"]
+
