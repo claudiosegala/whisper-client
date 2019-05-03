@@ -38,12 +38,12 @@ func (client *Client) RejectConsentRequest(challenge string, payload RejectConse
 }
 
 func (client *Client) get(flow, challenge string) map[string]interface{} {
-	p := path.Join(client.Admin.BaseURL.Path, "/oauth2/auth/requests/", flow, url.QueryEscape(challenge))
+	p := path.Join(client.Admin.BaseURL.Path, "/oauth2/auth/requests/", flow) + "?challenge=" + url.QueryEscape(challenge)
 	return client.treatResponse(client.Admin.Get(p))
 }
 
 func (client *Client) put(flow, challenge, action string, data []byte) map[string]interface{} {
-	p := path.Join(client.Admin.BaseURL.Path, "/oauth2/auth/requests/", flow, url.QueryEscape(challenge), action)
+	p := path.Join(client.Admin.BaseURL.Path, "/oauth2/auth/requests/", flow, action) + "?challenge=" + url.QueryEscape(challenge)
 	return client.treatResponse(client.Admin.Put(p, data))
 }
 
