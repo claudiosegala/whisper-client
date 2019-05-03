@@ -41,7 +41,7 @@ if err == nil {
 The following command should get you started:
 
 ```
-./whisper-client --client-id teste --client-secret teste123 --hydra-admin-url http://localhost:4445/ --hydra-public-url http://localhost:4444/ --redirect-uris http://test.com,http://test1.com  > token.json
+./whisper-client /whisper-client --client-id teste --client-secret teste123 --hydra-admin-url http://hydra:4445/ --hydra-public-url http://hydra:4444/ --redirect-uris http://test.com,http://test1.com --log-level debug --scopes test1,test2  > token.json
 ```
 The command above will store the generated token as a file called `token.json`.
 
