@@ -103,6 +103,11 @@ func (client *WhisperClient) IntrospectToken(token string) (hydra.Token, error) 
 	return client.hydraClient.IntrospectToken(token)
 }
 
+// Logout calls hydra logout api
+func (client *WhisperClient) Logout(subject string) error {
+	return client.hydraClient.Logout(subject)
+}
+
 // GetTokenAsJSONStr stores the token in the environment variables as a json string
 func (client *WhisperClient) GetTokenAsJSONStr(t *oauth2.Token) string {
 	buf := new(bytes.Buffer)

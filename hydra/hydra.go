@@ -159,3 +159,23 @@ func (client *Client) DoClientCredentialsFlow() (t *oauth2.Token, err error) {
 
 	return oauthConfig.Token(ctx)
 }
+
+// Logout call hydra service and logs the user out
+func (client *Client) Logout(subject string) error {
+	resp, _, err := client.Admin.Delete(fmt.Sprintf("/oauth2/auth/sessions/login?subject=%v", subject))
+
+	if err == nil {
+		if resp != nil {
+			logrus.Debugf("Logout: %v - %v", subject, resp.StatusCode)
+			if resp.StatusCode == 204 || resp.StatusCode == 201 {
+				return nil
+			} else if resp.StatusCode == 404 {
+				return fmt.Errorf("Not found")
+			}
+			return fmt.Errorf("Internal server error")
+		}
+		return fmt.Errorf("Expecting response payload to be not null")
+	}
+
+	return err
+}
