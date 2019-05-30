@@ -13,3 +13,6 @@
 
 # `go build` output
 whisper-client
+
+# run output
+token.json
