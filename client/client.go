@@ -18,13 +18,14 @@ import (
 type WhisperClient struct {
 	*config.Flags
 	hydraClient *hydra.Client
+	isPublic    bool
 }
 
 // InitFromFlags initialize a whisper client from flags
 func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
 	client.Flags = flags
 	client.hydraClient = new(hydra.Client).Init(flags.HydraAdminURL.String(), flags.HydraPublicURL.String(), flags.ClientID, flags.ClientSecret, client.Scopes, flags.RedirectURIs)
-
+	client.isPublic = len(strings.ReplaceAll(client.ClientSecret, " ", "")) == 0
 	return client
 }
 
@@ -56,6 +57,7 @@ func (client *WhisperClient) InitFromHydraClient(hydraClient *hydra.Client) *Whi
 		Scopes:         hydraClient.Scopes,
 		RedirectURIs:   hydraClient.RedirectURIs,
 	}
+	client.isPublic = len(strings.ReplaceAll(hydraClient.ClientSecret, " ", "")) == 0
 
 	return client
 }
@@ -73,7 +75,7 @@ func (client *WhisperClient) CheckCredentials() (t *oauth2.Token, err error) {
 			_, err = client.hydraClient.UpdateOAuth2Client()
 		}
 
-		if err == nil {
+		if err == nil && !client.isPublic {
 			t, err = client.hydraClient.DoClientCredentialsFlow()
 		}
 	}

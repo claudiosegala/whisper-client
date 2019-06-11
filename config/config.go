@@ -45,7 +45,7 @@ func AddFlags(flags *pflag.FlagSet) {
 	flags.String(hydraAdminURL, "", "The Hydra Admin Endpoint for creating client apps.")
 	flags.String(hydraPublicURL, "", "The Hydra Public Endpoint for firing up authorization flows.")
 	flags.String(clientID, "", "The client ID for this app. If hydra doesn't recognize this ID, it will be created as is. If creation fails, execution of this utility panics.")
-	flags.String(clientSecret, "", "The client secret for this app, in terms of oauth2 client credentials. Must be at least 6 characters long.")
+	flags.String(clientSecret, "", "[optional] The client secret for this app, in terms of oauth2 client credentials. Must be at least 6 characters long. If not set, client is considered public and should perform the authorization code flow with PKCE")
 	flags.String(logLevel, "info", "[optional] The log level (trace, debug, info, warn, error, fatal, panic).")
 	flags.String(scopes, "", "[optional] A comma separated list of scopes the client can ask for.")
 	flags.String(redirectURIs, "", "[optional] A comma separated list of possible redirect_uris this client can talk to when performing an oauth2 authorization code flow.")
@@ -78,8 +78,8 @@ func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
 }
 
 func (flags *Flags) check() {
-	if flags.ClientID == "" || flags.ClientSecret == "" || flags.HydraAdminURL.Host == "" || flags.HydraPublicURL.Host == "" {
-		panic("client-id, client-secret, hydra-admin-url and hydra-public-url cannot be empty")
+	if flags.ClientID == "" || flags.HydraAdminURL.Host == "" || flags.HydraPublicURL.Host == "" {
+		panic("client-id, hydra-admin-url and hydra-public-url cannot be empty")
 	}
 
 	if len(flags.ClientSecret) < 6 {
