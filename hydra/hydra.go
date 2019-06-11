@@ -29,6 +29,9 @@ type Client struct {
 	ClientID     string
 	ClientSecret string
 	RedirectURIs []string
+
+	tokenEndpointAuthMethod string
+	grantTypes              []string
 }
 
 // Init initializes a hydra client
@@ -47,6 +50,13 @@ func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret
 	client.ClientID = clientID
 	client.ClientSecret = clientSecret
 	client.RedirectURIs = redirectURIs
+
+	client.tokenEndpointAuthMethod = "none"
+	client.grantTypes = []string{"authorization_code", "refresh_token"}
+	if len(strings.ReplaceAll(client.ClientSecret, " ", "")) > 0 {
+		client.tokenEndpointAuthMethod = "client_secret_post"
+		client.grantTypes = append(client.grantTypes, "client_credentials")
+	}
 	return client
 }
 
@@ -86,9 +96,9 @@ func (client *Client) CreateOAuth2Client() (result *OAuth2Client, err error) {
 		OAuth2Client{
 			ClientID:                client.ClientID,
 			ClientSecret:            client.ClientSecret,
-			TokenEndpointAuthMethod: "client_secret_post",
+			TokenEndpointAuthMethod: client.tokenEndpointAuthMethod,
 			Scopes:                  strings.Join(client.Scopes, " "),
-			GrantTypes:              []string{"client_credentials", "authorization_code", "refresh_token"},
+			GrantTypes:              client.grantTypes,
 			RedirectURIs:            client.RedirectURIs,
 		})
 
@@ -117,9 +127,9 @@ func (client *Client) UpdateOAuth2Client() (result *OAuth2Client, err error) {
 			ClientID:                client.ClientID,
 			ClientSecret:            client.ClientSecret,
 			Scopes:                  strings.Join(client.Scopes, " "),
-			TokenEndpointAuthMethod: "client_secret_post",
+			TokenEndpointAuthMethod: client.tokenEndpointAuthMethod,
 			RedirectURIs:            client.RedirectURIs,
-			GrantTypes:              []string{"client_credentials", "authorization_code", "refresh_token"},
+			GrantTypes:              client.grantTypes,
 		})
 
 	logrus.Debugf("UpdateOAuth2Client - PUT payload: '%v'", payloadData)
