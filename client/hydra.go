@@ -35,7 +35,7 @@ func (client *hydraClient) initHydraClient(hydraAdminURL, hydraPublicURL, client
 	client.scopes = scopes
 	client.clientID = clientID
 	client.clientSecret = clientSecret
-	client.redirectURIs = redirectURIs
+	client.RedirectURIs = redirectURIs
 
 	client.tokenEndpointAuthMethod = "none"
 	client.grantTypes = []string{"authorization_code", "refresh_token"}
@@ -69,7 +69,7 @@ func (client *hydraClient) createOAuth2Client() (result *OAuth2Client, err error
 			TokenEndpointAuthMethod: client.tokenEndpointAuthMethod,
 			Scopes:                  strings.Join(client.scopes, " "),
 			GrantTypes:              client.grantTypes,
-			RedirectURIs:            client.redirectURIs,
+			RedirectURIs:            client.RedirectURIs,
 		})
 
 	logrus.Debugf("CreateOAuth2Client - POST payload: '%v'", payloadData)
@@ -98,7 +98,7 @@ func (client *hydraClient) updateOAuth2Client() (result *OAuth2Client, err error
 			ClientSecret:            client.clientSecret,
 			Scopes:                  strings.Join(client.scopes, " "),
 			TokenEndpointAuthMethod: client.tokenEndpointAuthMethod,
-			RedirectURIs:            client.redirectURIs,
+			RedirectURIs:            client.RedirectURIs,
 			GrantTypes:              client.grantTypes,
 		})
 

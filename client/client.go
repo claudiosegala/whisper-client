@@ -50,7 +50,7 @@ func (client *WhisperClient) CheckCredentials() (t *oauth2.Token, err error) {
 	}
 
 	if err == nil {
-		if hc.Scopes != strings.Join(client.scopes, " ") || !reflect.DeepEqual(hc.RedirectURIs, client.redirectURIs) {
+		if hc.Scopes != strings.Join(client.scopes, " ") || !reflect.DeepEqual(hc.RedirectURIs, client.RedirectURIs) {
 			_, err = client.updateOAuth2Client()
 		}
 
