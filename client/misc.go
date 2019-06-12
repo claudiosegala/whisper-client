@@ -1,6 +1,9 @@
 package client
 
 import (
+	"crypto/sha256"
+	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strings"
@@ -54,4 +57,24 @@ func getStateAndNonce() (state, nonce []rune, err error) {
 		}
 	}
 	return nil, nil, nil
+}
+
+func getCodeVerifierAndChallenge() (codeVerifier string, codeChallenge string, err error) {
+	cv, err := randx.RuneSequence(48, randx.AlphaLower)
+	if err == nil {
+		codeVerifier = string(cv)
+
+		hash := sha256.New()
+		hash.Write([]byte(string(codeVerifier)))
+		codeChallenge = base64.RawURLEncoding.EncodeToString(hash.Sum([]byte{}))
+
+		return codeVerifier, codeChallenge, nil
+	}
+	return "", "", err
+}
+
+func getNoSSLClient() *http.Client {
+	return &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}}
 }

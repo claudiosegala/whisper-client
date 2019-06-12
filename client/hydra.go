@@ -1,12 +1,19 @@
 package client
 
 import (
+	"bytes"
+	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 	"path"
 	"strings"
 
 	"github.com/labbsr0x/goh/gohtypes"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/sirupsen/logrus"
 
@@ -108,4 +115,64 @@ func (client *hydraClient) updateOAuth2Client() (result *OAuth2Client, err error
 		return nil, fmt.Errorf("Expecting response payload to be not null")
 	}
 	return nil, err
+}
+
+// IntrospectToken calls hydra to introspect a access or refresh token
+func (client *WhisperClient) IntrospectToken(token string) (result Token, err error) {
+	httpClient, err := gohclient.New(nil, client.admin.BaseURL.String())
+	httpClient.ContentType = "application/x-www-form-urlencoded"
+	httpClient.Accept = "application/json"
+
+	payload := url.Values{"token": []string{token}, "scopes": client.scopes}
+	payloadData := bytes.NewBufferString(payload.Encode()).Bytes()
+	logrus.Debugf("IntrospectToken - POST payload: '%v'", payloadData)
+
+	resp, data, err := httpClient.Post("/oauth2/introspect/", payloadData)
+	if err == nil && resp != nil && resp.StatusCode == 200 {
+		err = json.Unmarshal(data, &result)
+	}
+	return result, err
+}
+
+// DoClientCredentialsFlow calls hydra's oauth2/token and starts a client credentials flow
+func (client *WhisperClient) DoClientCredentialsFlow() (t *oauth2.Token, err error) {
+	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, &http.Client{
+		Transport: &Transporter{
+			FakeTLSTermination: true,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+		},
+	})
+
+	u, _ := client.public.BaseURL.Parse("/oauth2/token")
+	oauthConfig := clientcredentials.Config{
+		ClientID:     client.clientID,
+		ClientSecret: client.clientSecret,
+		TokenURL:     u.String(),
+		Scopes:       client.scopes,
+		AuthStyle:    oauth2.AuthStyleInParams,
+	}
+
+	return oauthConfig.Token(ctx)
+}
+
+// Logout call hydra service and logs the user out
+func (client *hydraClient) Logout(subject string) error {
+	resp, _, err := client.admin.Delete(fmt.Sprintf("/oauth2/auth/sessions/login?subject=%v", subject))
+
+	if err == nil {
+		if resp != nil {
+			logrus.Debugf("Logout: %v - %v", subject, resp.StatusCode)
+			if resp.StatusCode == 204 || resp.StatusCode == 201 {
+				return nil
+			} else if resp.StatusCode == 404 {
+				return fmt.Errorf("Not found")
+			}
+			return fmt.Errorf("Internal server error")
+		}
+		return fmt.Errorf("Expecting response payload to be not null")
+	}
+
+	return err
 }
