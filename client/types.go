@@ -26,7 +26,7 @@ type hydraClient struct {
 	scopes       []string
 	clientID     string
 	clientSecret string
-	redirectURIs []string
+	RedirectURIs []string
 
 	tokenEndpointAuthMethod string
 	grantTypes              []string
