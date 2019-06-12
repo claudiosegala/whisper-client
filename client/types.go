@@ -1,6 +1,19 @@
-package hydra
+package client
 
 import "net/http"
+
+// WhisperClient holds the info and structures a whisper client must
+type WhisperClient struct {
+	*HydraClient
+	isPublic bool
+}
+
+type key string
+
+const (
+	// TokenKey defines the key that shall be used to store a token in a requests' context
+	TokenKey key = "token"
+)
 
 // Token holds a hydra token's data
 type Token struct {

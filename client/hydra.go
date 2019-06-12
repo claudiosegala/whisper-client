@@ -1,28 +1,20 @@
-package hydra
+package client
 
 import (
-	"bytes"
-	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
 	"path"
 	"strings"
 
 	"github.com/labbsr0x/goh/gohtypes"
-
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/labbsr0x/goh/gohclient"
 )
 
-// Client holds data and methods to communicate with an hydra service instance
-type Client struct {
+// HydraClient holds data and methods to communicate with an hydra service instance
+type HydraClient struct {
 	Public       *gohclient.Default
 	Admin        *gohclient.Default
 	Scopes       []string
@@ -34,8 +26,8 @@ type Client struct {
 	grantTypes              []string
 }
 
-// Init initializes a hydra client
-func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *Client {
+// initHydraClient initializes a hydra client
+func (client *HydraClient) initHydraClient(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *HydraClient {
 	var err error
 	client.Public, err = gohclient.New(nil, hydraPublicURL)
 	gohtypes.PanicIfError("Invalid HydraPublicURL", 500, err)
@@ -61,25 +53,8 @@ func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret
 	return client
 }
 
-// IntrospectToken calls hydra to introspect a access or refresh token
-func (client *Client) IntrospectToken(token string) (result Token, err error) {
-	httpClient, err := gohclient.New(nil, client.Admin.BaseURL.String())
-	httpClient.ContentType = "application/x-www-form-urlencoded"
-	httpClient.Accept = "application/json"
-
-	payload := url.Values{"token": []string{token}, "scopes": client.Scopes}
-	payloadData := bytes.NewBufferString(payload.Encode()).Bytes()
-	logrus.Debugf("IntrospectToken - POST payload: '%v'", payloadData)
-
-	resp, data, err := httpClient.Post("/oauth2/introspect/", payloadData)
-	if err == nil && resp != nil && resp.StatusCode == 200 {
-		err = json.Unmarshal(data, &result)
-	}
-	return result, err
-}
-
-// GetHydraOAuth2Client calls hydra to get a clients information
-func (client *Client) GetHydraOAuth2Client() (result *OAuth2Client, err error) {
+// getHydraOAuth2Client calls hydra to get a clients information
+func (client *HydraClient) getHydraOAuth2Client() (result *OAuth2Client, err error) {
 	p := path.Join(client.Admin.BaseURL.Path, "/clients/", client.ClientID)
 
 	logrus.Debugf("GetOAuth2Client - GET '%v'", client.ClientID)
@@ -90,8 +65,8 @@ func (client *Client) GetHydraOAuth2Client() (result *OAuth2Client, err error) {
 	return result, err
 }
 
-// CreateOAuth2Client calls hydra to create an oauth2 client
-func (client *Client) CreateOAuth2Client() (result *OAuth2Client, err error) {
+// createOAuth2Client calls hydra to create an oauth2 client
+func (client *HydraClient) createOAuth2Client() (result *OAuth2Client, err error) {
 	p := path.Join(client.Admin.BaseURL.Path, "/clients")
 	payloadData, _ := json.Marshal(
 		OAuth2Client{
@@ -121,7 +96,7 @@ func (client *Client) CreateOAuth2Client() (result *OAuth2Client, err error) {
 }
 
 // UpdateOAuth2Client updates the scopes and redirect urls of a registered oauth client
-func (client *Client) UpdateOAuth2Client() (result *OAuth2Client, err error) {
+func (client *HydraClient) updateOAuth2Client() (result *OAuth2Client, err error) {
 	p := path.Join(client.Admin.BaseURL.Path, "/clients/", client.ClientID)
 	payloadData, _ := json.Marshal(
 		OAuth2Client{
@@ -148,31 +123,8 @@ func (client *Client) UpdateOAuth2Client() (result *OAuth2Client, err error) {
 	return nil, err
 }
 
-// DoClientCredentialsFlow calls hydra's oauth2/token and starts a client credentials flow
-func (client *Client) DoClientCredentialsFlow() (t *oauth2.Token, err error) {
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, &http.Client{
-		Transport: &Transporter{
-			FakeTLSTermination: true,
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		},
-	})
-
-	u, _ := client.Public.BaseURL.Parse("/oauth2/token")
-	oauthConfig := clientcredentials.Config{
-		ClientID:     client.ClientID,
-		ClientSecret: client.ClientSecret,
-		TokenURL:     u.String(),
-		Scopes:       client.Scopes,
-		AuthStyle:    oauth2.AuthStyleInParams,
-	}
-
-	return oauthConfig.Token(ctx)
-}
-
 // Logout call hydra service and logs the user out
-func (client *Client) Logout(subject string) error {
+func (client *HydraClient) Logout(subject string) error {
 	resp, _, err := client.Admin.Delete(fmt.Sprintf("/oauth2/auth/sessions/login?subject=%v", subject))
 
 	if err == nil {
