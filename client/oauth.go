@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -22,7 +23,7 @@ import (
 func (client *WhisperClient) GetLoginURL(redirectURL string, scopes []string) (url string, err error) {
 	state, nonce, err := getStateAndNonce()
 	if err == nil {
-		oauth := client.GetXOAuth2Client(redirectURL, scopes)
+		oauth := client.getXOAuth2Client(redirectURL, scopes)
 
 		return oauth.AuthCodeURL(string(state), oauth2.SetAuthURLParam("nonce", string(nonce))), nil
 	}
@@ -36,7 +37,7 @@ func (client *WhisperClient) GetPKCELoginURL(redirectURL string, scopes []string
 	state, nonce, err := getStateAndNonce()
 
 	if err == nil {
-		oauth := client.GetXOAuth2Client(redirectURL, scopes)
+		oauth := client.getXOAuth2Client(redirectURL, scopes)
 		codeVerifier, err := randx.RuneSequence(48, randx.AlphaLower)
 		gohtypes.PanicIfError("Unable to mount a random code_challenge 24 character string", 500, err)
 
@@ -50,30 +51,13 @@ func (client *WhisperClient) GetPKCELoginURL(redirectURL string, scopes []string
 	return "", "", err
 }
 
-// GetXOAuth2Client gets an oauth2 client to fire authorization flows
-func (client *WhisperClient) GetXOAuth2Client(redirectURL string, scopes []string) *oauth2.Config {
-	authURL, _ := client.Public.BaseURL.Parse("/oauth2/auth")
-	tokenURL, _ := client.Public.BaseURL.Parse("/oauth2/token")
-
-	return &oauth2.Config{
-		ClientID:     client.ClientID,
-		ClientSecret: client.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  authURL.String(),
-			TokenURL: tokenURL.String(),
-		},
-		RedirectURL: redirectURL,
-		Scopes:      scopes,
-	}
-}
-
 // IntrospectToken calls hydra to introspect a access or refresh token
 func (client *WhisperClient) IntrospectToken(token string) (result Token, err error) {
-	httpClient, err := gohclient.New(nil, client.Admin.BaseURL.String())
+	httpClient, err := gohclient.New(nil, client.admin.BaseURL.String())
 	httpClient.ContentType = "application/x-www-form-urlencoded"
 	httpClient.Accept = "application/json"
 
-	payload := url.Values{"token": []string{token}, "scopes": client.Scopes}
+	payload := url.Values{"token": []string{token}, "scopes": client.scopes}
 	payloadData := bytes.NewBufferString(payload.Encode()).Bytes()
 	logrus.Debugf("IntrospectToken - POST payload: '%v'", payloadData)
 
@@ -95,14 +79,51 @@ func (client *WhisperClient) DoClientCredentialsFlow() (t *oauth2.Token, err err
 		},
 	})
 
-	u, _ := client.Public.BaseURL.Parse("/oauth2/token")
+	u, _ := client.public.BaseURL.Parse("/oauth2/token")
 	oauthConfig := clientcredentials.Config{
-		ClientID:     client.ClientID,
-		ClientSecret: client.ClientSecret,
+		ClientID:     client.clientID,
+		ClientSecret: client.clientSecret,
 		TokenURL:     u.String(),
-		Scopes:       client.Scopes,
+		Scopes:       client.scopes,
 		AuthStyle:    oauth2.AuthStyleInParams,
 	}
 
 	return oauthConfig.Token(ctx)
+}
+
+// Logout call hydra service and logs the user out
+func (client *hydraClient) Logout(subject string) error {
+	resp, _, err := client.admin.Delete(fmt.Sprintf("/oauth2/auth/sessions/login?subject=%v", subject))
+
+	if err == nil {
+		if resp != nil {
+			logrus.Debugf("Logout: %v - %v", subject, resp.StatusCode)
+			if resp.StatusCode == 204 || resp.StatusCode == 201 {
+				return nil
+			} else if resp.StatusCode == 404 {
+				return fmt.Errorf("Not found")
+			}
+			return fmt.Errorf("Internal server error")
+		}
+		return fmt.Errorf("Expecting response payload to be not null")
+	}
+
+	return err
+}
+
+// getXOAuth2Client gets an oauth2 client to fire authorization flows
+func (client *WhisperClient) getXOAuth2Client(redirectURL string, scopes []string) *oauth2.Config {
+	authURL, _ := client.public.BaseURL.Parse("/oauth2/auth")
+	tokenURL, _ := client.public.BaseURL.Parse("/oauth2/token")
+
+	return &oauth2.Config{
+		ClientID:     client.clientID,
+		ClientSecret: client.clientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  authURL.String(),
+			TokenURL: tokenURL.String(),
+		},
+		RedirectURL: redirectURL,
+		Scopes:      scopes,
+	}
 }
