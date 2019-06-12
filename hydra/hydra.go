@@ -53,7 +53,8 @@ func (client *Client) Init(hydraAdminURL, hydraPublicURL, clientID, clientSecret
 
 	client.tokenEndpointAuthMethod = "none"
 	client.grantTypes = []string{"authorization_code", "refresh_token"}
-	if len(strings.ReplaceAll(client.ClientSecret, " ", "")) > 0 {
+
+	if len(strings.ReplaceAll(client.ClientSecret, " ", "")) > 0 { // a non public client can perform client_credentials grant type and should inform the secret on all transctions
 		client.tokenEndpointAuthMethod = "client_secret_post"
 		client.grantTypes = append(client.grantTypes, "client_credentials")
 	}
@@ -77,8 +78,8 @@ func (client *Client) IntrospectToken(token string) (result Token, err error) {
 	return result, err
 }
 
-// GetOAuth2Client calls hydra to get a clients information
-func (client *Client) GetOAuth2Client() (result *OAuth2Client, err error) {
+// GetHydraOAuth2Client calls hydra to get a clients information
+func (client *Client) GetHydraOAuth2Client() (result *OAuth2Client, err error) {
 	p := path.Join(client.Admin.BaseURL.Path, "/clients/", client.ClientID)
 
 	logrus.Debugf("GetOAuth2Client - GET '%v'", client.ClientID)
