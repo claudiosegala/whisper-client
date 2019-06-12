@@ -21,9 +21,7 @@ import (
 // WhisperClient holds the info and structures a whisper client must
 type WhisperClient struct {
 	*hydra.Client
-	isPublic       bool
-	HydraAdminURL  *url.URL
-	HydraPublicURL *url.URL
+	isPublic bool
 }
 
 type key string
@@ -37,6 +35,7 @@ const (
 func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
 	client.Client = new(hydra.Client).Init(flags.HydraAdminURL.String(), flags.HydraPublicURL.String(), flags.ClientID, flags.ClientSecret, client.Scopes, flags.RedirectURIs)
 	client.isPublic = len(strings.ReplaceAll(flags.ClientSecret, " ", "")) == 0
+
 	return client
 }
 
@@ -80,8 +79,8 @@ func (client *WhisperClient) CheckCredentials() (t *oauth2.Token, err error) {
 
 // GetXOAuth2Client gets an oauth2 client to fire authorization flows
 func (client *WhisperClient) GetXOAuth2Client(redirectURL string, scopes []string) *oauth2.Config {
-	authURL, _ := client.HydraPublicURL.Parse("/oauth2/auth")
-	tokenURL, _ := client.HydraPublicURL.Parse("/oauth2/token")
+	authURL, _ := client.Public.BaseURL.Parse("/oauth2/auth")
+	tokenURL, _ := client.Public.BaseURL.Parse("/oauth2/token")
 
 	return &oauth2.Config{
 		ClientID:     client.ClientID,
