@@ -1,10 +1,14 @@
 package client
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/labbsr0x/goh/gohclient"
+)
 
 // WhisperClient holds the info and structures a whisper client must
 type WhisperClient struct {
-	*HydraClient
+	*hydraClient
 	isPublic bool
 }
 
@@ -14,6 +18,19 @@ const (
 	// TokenKey defines the key that shall be used to store a token in a requests' context
 	TokenKey key = "token"
 )
+
+// hydraClient holds data and methods to communicate with an hydra service instance
+type hydraClient struct {
+	public       *gohclient.Default
+	admin        *gohclient.Default
+	scopes       []string
+	clientID     string
+	clientSecret string
+	redirectURIs []string
+
+	tokenEndpointAuthMethod string
+	grantTypes              []string
+}
 
 // Token holds a hydra token's data
 type Token struct {
