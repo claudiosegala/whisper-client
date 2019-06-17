@@ -18,7 +18,7 @@ import (
 
 // InitFromFlags initialize a whisper client from flags
 func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
-	client.hydraClient = new(hydraClient).initHydraClient(flags.HydraAdminURL.String(), flags.HydraPublicURL.String(), flags.ClientID, flags.ClientSecret, flags.Scopes, flags.RedirectURIs)
+	client.hydraClient = new(hydraClient).initHydraClient(flags.WhisperAdminURL.String(), flags.WhisperPublicURL.String(), flags.ClientID, flags.ClientSecret, flags.Scopes, flags.RedirectURIs)
 	client.isPublic = len(strings.ReplaceAll(flags.ClientSecret, " ", "")) == 0
 
 	return client
@@ -32,12 +32,12 @@ func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clien
 	gohtypes.PanicIfError("Invalid whisper public url", 500, err)
 
 	return client.InitFromFlags(&config.Flags{
-		ClientID:       clientID,
-		ClientSecret:   clientSecret,
-		HydraAdminURL:  adminURI,
-		HydraPublicURL: publicURI,
-		Scopes:         scopes,
-		RedirectURIs:   redirectURIs,
+		ClientID:         clientID,
+		ClientSecret:     clientSecret,
+		WhisperAdminURL:  adminURI,
+		WhisperPublicURL: publicURI,
+		Scopes:           scopes,
+		RedirectURIs:     redirectURIs,
 	})
 }
 
