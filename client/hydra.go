@@ -135,6 +135,7 @@ func (client *WhisperClient) IntrospectToken(token string) (result Token, err er
 }
 
 // DoClientCredentialsFlow calls hydra's oauth2/token and starts a client credentials flow
+// this method is only correctly executed if the registered client is not public, i.e, has non-empty client secret
 func (client *WhisperClient) DoClientCredentialsFlow() (t *oauth2.Token, err error) {
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, &http.Client{
 		Transport: &Transporter{
