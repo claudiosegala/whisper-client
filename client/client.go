@@ -25,10 +25,10 @@ func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
 }
 
 // InitFromParams initializes a whisper client from normal params
-func (client *WhisperClient) InitFromParams(hydraAdminURL, hydraPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *WhisperClient {
-	adminURI, err := url.Parse(hydraAdminURL)
+func (client *WhisperClient) InitFromParams(whisperAdminURL, whisperPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *WhisperClient {
+	adminURI, err := url.Parse(whisperAdminURL)
 	gohtypes.PanicIfError("Invalid whisper admin url", 500, err)
-	publicURI, err := url.Parse(hydraPublicURL)
+	publicURI, err := url.Parse(whisperPublicURL)
 	gohtypes.PanicIfError("Invalid whisper public url", 500, err)
 
 	return client.InitFromFlags(&config.Flags{

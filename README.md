@@ -26,7 +26,7 @@ import (
 
 ...
 
-whisperClient.InitFromParams("http://localhost:4445", "http://localhost:4444", "client", "password", []string{"client-specific-stuff-01 client-specific-stuff-02 "})
+whisperClient.InitFromParams("http://localhost:4445", "http://localhost:4444", "client", "password", []string{"client-specific-stuff-01 client-specific-stuff-02 "}, []string{"http://redirect1", "http://redirect2"})
 
 t, err := whisperClient.CheckCredentials()
 
@@ -43,7 +43,7 @@ if err == nil {
 The following command should get you started:
 
 ```
-./whisper-client --client-id teste --client-secret teste123 --whisper-admin-url http://localhost:4445/ --whisper-public-url http://localhost:4444/ --redirect-uris http://test.com,http://test1.com --log-level debug --scopes test1,test2  > token.json
+./whisper-client --client-id teste --client-secret teste123 --whisper-admin-url http://localhost:4445/ --whisper-public-url http://localhost:4444/ --redirect-uris http://redirect1,http://redirect2 --log-level debug --scopes test1,test2  > token.json
 ```
 The command above will store the generated token as a file called `token.json`.
 
