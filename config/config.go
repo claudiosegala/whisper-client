@@ -20,30 +20,30 @@ const (
 )
 
 const (
-	hydraAdminURL  = "hydra-admin-url"
-	hydraPublicURL = "hydra-public-url"
-	clientID       = "client-id"
-	clientSecret   = "client-secret"
-	logLevel       = "log-level"
-	scopes         = "scopes"
-	redirectURIs   = "redirect-uris"
+	whisperAdminURL  = "whisper-admin-url"
+	whisperPublicURL = "whisper-public-url"
+	clientID         = "client-id"
+	clientSecret     = "client-secret"
+	logLevel         = "log-level"
+	scopes           = "scopes"
+	redirectURIs     = "redirect-uris"
 )
 
 // Flags define the fields that will be passed via cmd
 type Flags struct {
-	HydraAdminURL  *url.URL
-	HydraPublicURL *url.URL
-	ClientID       string
-	ClientSecret   string
-	LogLevel       string
-	Scopes         []string
-	RedirectURIs   []string
+	WhisperAdminURL  *url.URL
+	WhisperPublicURL *url.URL
+	ClientID         string
+	ClientSecret     string
+	LogLevel         string
+	Scopes           []string
+	RedirectURIs     []string
 }
 
 // AddFlags adds flags for Builder.
 func AddFlags(flags *pflag.FlagSet) {
-	flags.String(hydraAdminURL, "", "The Hydra Admin Endpoint for creating client apps.")
-	flags.String(hydraPublicURL, "", "The Hydra Public Endpoint for firing up authorization flows.")
+	flags.String(whisperAdminURL, "", "The Whisper Admin Endpoint for managing client apps.")
+	flags.String(whisperPublicURL, "", "The Whisper Public Endpoint for firing up authorization flows.")
 	flags.String(clientID, "", "The client ID for this app. If hydra doesn't recognize this ID, it will be created as is. If creation fails, execution of this utility panics.")
 	flags.String(clientSecret, "", "[optional] The client secret for this app, in terms of oauth2 client credentials. Must be at least 6 characters long. If not set, client is considered public and should perform the authorization code flow with PKCE")
 	flags.String(logLevel, "info", "[optional] The log level (trace, debug, info, warn, error, fatal, panic).")
@@ -60,9 +60,9 @@ func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
 	flags.Scopes = strings.Split(v.GetString(scopes), ",")
 	flags.RedirectURIs = strings.Split(v.GetString(redirectURIs), ",")
 
-	flags.HydraAdminURL, err = url.Parse(v.GetString(hydraAdminURL))
+	flags.WhisperAdminURL, err = url.Parse(v.GetString(whisperAdminURL))
 	gohtypes.PanicIfError("Invalid whisper admin url", 500, err)
-	flags.HydraPublicURL, err = url.Parse(v.GetString(hydraPublicURL))
+	flags.WhisperPublicURL, err = url.Parse(v.GetString(whisperPublicURL))
 	gohtypes.PanicIfError("Invalid whisper public url", 500, err)
 
 	flags.check()
@@ -78,8 +78,8 @@ func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
 }
 
 func (flags *Flags) check() {
-	if flags.ClientID == "" || flags.HydraAdminURL.Host == "" || flags.HydraPublicURL.Host == "" {
-		panic("client-id, hydra-admin-url and hydra-public-url cannot be empty")
+	if flags.ClientID == "" || flags.WhisperAdminURL.Host == "" || flags.WhisperPublicURL.Host == "" {
+		panic("client-id, whisper-admin-url and whisper-public-url cannot be empty")
 	}
 
 	if len(flags.ClientSecret) < 6 {
