@@ -3,7 +3,7 @@ version: '3.5'
 services:
   whisper-client:
     build: .
-    image: abilioesteves/whisper-client:0.1.0
+    image: labbsr0x/whisper-client:latest
     depends_on:
       - hydra
     command:
