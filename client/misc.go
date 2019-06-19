@@ -47,16 +47,16 @@ func getAccessTokenFromRequest(r *http.Request) (string, error) {
 	return t, nil
 }
 
-func getStateAndNonce() (state, nonce []rune, err error) {
-	state, err = randx.RuneSequence(24, randx.AlphaLower)
+func getStateAndNonce() (state, nonce string, err error) {
+	st, err := randx.RuneSequence(24, randx.AlphaLower)
 	if err == nil {
-		nonce, err = randx.RuneSequence(24, randx.AlphaLower)
+		ne, err := randx.RuneSequence(24, randx.AlphaLower)
 
 		if err == nil {
-			return state, nonce, err
+			return string(st), string(ne), err
 		}
 	}
-	return nil, nil, nil
+	return "", "", nil
 }
 
 func getCodeVerifierAndChallenge() (codeVerifier string, codeChallenge string, err error) {
