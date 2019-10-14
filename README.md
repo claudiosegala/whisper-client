@@ -6,7 +6,7 @@ Defines a script and a library to be used when initializing a client app that co
 
 This script/lib takes care of creating the Whisper client in case it does not exist.
 
-Given that, when firing up your client app, you'll need to provide a `client-id`, a `client-secret`, a list of allowed `redirect-uris` and Whisper's endpoints `whisper-admin-url` and `whisper-public-url`. 
+Given that, when firing up your client app, you'll need to provide a `client-id`, a `client-secret`, a list of allowed `redirect-uris` and Whisper's endpoint `whisper-url`. 
 
 The scopes that your application is able to ask for when issuing tokens are set via the `scopes` variable.
 
@@ -27,14 +27,13 @@ import (
 
 //...
 
-whisperAdminURL := "http://localhost:4445"
-whisperPublicURL := "http://localhost:4444"
+whisperURL := "http://localhost:7070"
 clientID := "client"
 clientSecret := "password"
 scopes := []string{"client-specific-stuff-01 client-specific-stuff-02"}
 redirectURIs := []string{"http://redirect1", "http://redirect2"}
 
-whisperClient.InitFromParams(hydraAdminURL, hydraPublicURL, clientID, clientSecret, scopes, redirectURIs)
+whisperClient.InitFromParams(whisperURL, clientID, clientSecret, scopes, redirectURIs)
 
 t, err := whisperClient.CheckCredentials()
 
@@ -51,7 +50,7 @@ if err == nil {
 The following command should get you started:
 
 ```bash
-./whisper-client --client-id teste --client-secret teste123 --whisper-admin-url http://localhost:4445/ --whisper-public-url http://localhost:4444/ --redirect-uris http://redirect1,http://redirect2 --log-level debug --scopes test1,test2  > token.json
+./whisper-client --client-id teste --client-secret teste123 --whisper-url http://localhost:7070/ --redirect-uris http://redirect1,http://redirect2 --log-level debug --scopes test1,test2  > token.json
 ```
 
 The command above will store the generated token as a file called `token.json`.
