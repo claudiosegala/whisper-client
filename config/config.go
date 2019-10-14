@@ -1,9 +1,7 @@
 package config
 
 import (
-	"encoding/json"
-	"github.com/labbsr0x/goh/gohclient"
-	"net/http"
+	"github.com/labbsr0x/whisper-client/misc"
 	"net/url"
 	"strings"
 
@@ -66,7 +64,7 @@ func (c *Config) InitFromViper(v *viper.Viper) *Config {
 	c.WhisperURL, err = url.Parse(v.GetString(whisperURL))
 	gohtypes.PanicIfError("Invalid whisper url", 500, err)
 
-	hydraAdminURL, hydraPublicURL := retrieveHydraURLs(c.WhisperURL.String())
+	hydraAdminURL, hydraPublicURL := misc.RetrieveHydraURLs(c.WhisperURL.String())
 
 	c.HydraAdminURL, err = url.Parse(hydraAdminURL)
 	gohtypes.PanicIfError("Invalid whisper admin url", 500, err)
@@ -85,26 +83,6 @@ func (c *Config) InitFromViper(v *viper.Viper) *Config {
 	logrus.SetLevel(logLevel)
 
 	return c
-}
-
-func retrieveHydraURLs(baseURL string) (string, string) {
-	httpClient, err := gohclient.New(nil, baseURL)
-	gohtypes.PanicIfError("Unable to create a client", http.StatusInternalServerError, err)
-
-	httpClient.ContentType = "application/x-www-form-urlencoded"
-	httpClient.Accept = "application/json"
-
-	resp, data, err := httpClient.Get("/hydra")
-	if err != nil || resp == nil || resp.StatusCode != 200 {
-		gohtypes.Panic("Unable to retrieve the hydra urls", http.StatusInternalServerError)
-	}
-
-	var result = make(map[string]string)
-
-	err = json.Unmarshal(data, &result)
-	gohtypes.PanicIfError("Unable to unmarshal json", http.StatusInternalServerError, err)
-
-	return result["hydraAdminUrl"], result["hydraPublicUrl"]
 }
 
 func (c *Config) check() {

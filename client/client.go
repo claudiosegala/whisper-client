@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/labbsr0x/whisper-client/misc"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -25,17 +26,22 @@ func (client *WhisperClient) InitFromConfig(config *config.Config) *WhisperClien
 }
 
 // InitFromParams initializes a whisper client from normal params
-func (client *WhisperClient) InitFromParams(whisperAdminURL, whisperPublicURL, clientID, clientSecret string, scopes, redirectURIs []string) *WhisperClient {
-	adminURI, err := url.Parse(whisperAdminURL)
-	gohtypes.PanicIfError("Invalid whisper admin url", 500, err)
-	publicURI, err := url.Parse(whisperPublicURL)
-	gohtypes.PanicIfError("Invalid whisper public url", 500, err)
+func (client *WhisperClient) InitFromParams(whisperURL, clientID, clientSecret string, scopes, redirectURIs []string) *WhisperClient {
+	hydraAdminURL, hydraPublicURL := misc.RetrieveHydraURLs(whisperURL)
+
+	whisperURI, err := url.Parse(whisperURL)
+	gohtypes.PanicIfError("Invalid whisper url", 500, err)
+	hydraAdminURI, err := url.Parse(hydraAdminURL)
+	gohtypes.PanicIfError("Invalid hydra admin url", 500, err)
+	hydraPublicURI, err := url.Parse(hydraPublicURL)
+	gohtypes.PanicIfError("Invalid hydra public url", 500, err)
 
 	return client.InitFromConfig(&config.Config{
 		ClientID:       clientID,
 		ClientSecret:   clientSecret,
-		HydraAdminURL:  adminURI,
-		HydraPublicURL: publicURI,
+		WhisperURL:     whisperURI,
+		HydraAdminURL:  hydraAdminURI,
+		HydraPublicURL: hydraPublicURI,
 		Scopes:         scopes,
 		RedirectURIs:   redirectURIs,
 	})
