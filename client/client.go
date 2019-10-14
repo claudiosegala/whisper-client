@@ -16,10 +16,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// InitFromFlags initialize a whisper client from flags
-func (client *WhisperClient) InitFromFlags(flags *config.Flags) *WhisperClient {
-	client.hydraClient = new(hydraClient).initHydraClient(flags.WhisperAdminURL.String(), flags.WhisperPublicURL.String(), flags.ClientID, flags.ClientSecret, flags.Scopes, flags.RedirectURIs)
-	client.isPublic = len(strings.ReplaceAll(flags.ClientSecret, " ", "")) == 0
+// InitFromConfig initialize a whisper client from flags
+func (client *WhisperClient) InitFromConfig(config *config.Config) *WhisperClient {
+	client.hydraClient = new(hydraClient).initHydraClient(config.HydraAdminURL.String(), config.HydraPublicURL.String(), config.ClientID, config.ClientSecret, config.Scopes, config.RedirectURIs)
+	client.isPublic = len(strings.ReplaceAll(config.ClientSecret, " ", "")) == 0
 
 	return client
 }
@@ -31,13 +31,13 @@ func (client *WhisperClient) InitFromParams(whisperAdminURL, whisperPublicURL, c
 	publicURI, err := url.Parse(whisperPublicURL)
 	gohtypes.PanicIfError("Invalid whisper public url", 500, err)
 
-	return client.InitFromFlags(&config.Flags{
-		ClientID:         clientID,
-		ClientSecret:     clientSecret,
-		WhisperAdminURL:  adminURI,
-		WhisperPublicURL: publicURI,
-		Scopes:           scopes,
-		RedirectURIs:     redirectURIs,
+	return client.InitFromConfig(&config.Config{
+		ClientID:       clientID,
+		ClientSecret:   clientSecret,
+		HydraAdminURL:  adminURI,
+		HydraPublicURL: publicURI,
+		Scopes:         scopes,
+		RedirectURIs:   redirectURIs,
 	})
 }
 

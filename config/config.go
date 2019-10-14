@@ -1,6 +1,9 @@
 package config
 
 import (
+	"encoding/json"
+	"github.com/labbsr0x/goh/gohclient"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -20,30 +23,29 @@ const (
 )
 
 const (
-	whisperAdminURL  = "whisper-admin-url"
-	whisperPublicURL = "whisper-public-url"
-	clientID         = "client-id"
-	clientSecret     = "client-secret"
-	logLevel         = "log-level"
-	scopes           = "scopes"
-	redirectURIs     = "redirect-uris"
+	whisperURL   = "whisper-url"
+	clientID     = "client-id"
+	clientSecret = "client-secret"
+	logLevel     = "log-level"
+	scopes       = "scopes"
+	redirectURIs = "redirect-uris"
 )
 
-// Flags define the fields that will be passed via cmd
-type Flags struct {
-	WhisperAdminURL  *url.URL
-	WhisperPublicURL *url.URL
-	ClientID         string
-	ClientSecret     string
-	LogLevel         string
-	Scopes           []string
-	RedirectURIs     []string
+// Config define the fields that will be passed via cmd
+type Config struct {
+	WhisperURL     *url.URL
+	HydraAdminURL  *url.URL
+	HydraPublicURL *url.URL
+	ClientID       string
+	ClientSecret   string
+	LogLevel       string
+	Scopes         []string
+	RedirectURIs   []string
 }
 
 // AddFlags adds flags for Builder.
 func AddFlags(flags *pflag.FlagSet) {
-	flags.String(whisperAdminURL, "", "The Whisper Admin Endpoint for managing client apps.")
-	flags.String(whisperPublicURL, "", "The Whisper Public Endpoint for firing up authorization flows.")
+	flags.String(whisperURL, "", "The Whisper Endpoint.")
 	flags.String(clientID, "", "The client ID for this app. If hydra doesn't recognize this ID, it will be created as is. If creation fails, execution of this utility panics.")
 	flags.String(clientSecret, "", "[optional] The client secret for this app, in terms of oauth2 client credentials. Must be at least 6 characters long. If not set, client is considered public and should perform the authorization code flow with PKCE")
 	flags.String(logLevel, "info", "[optional] The log level (trace, debug, info, warn, error, fatal, panic).")
@@ -52,37 +54,65 @@ func AddFlags(flags *pflag.FlagSet) {
 }
 
 // InitFromViper initializes the flags from Viper.
-func (flags *Flags) InitFromViper(v *viper.Viper) *Flags {
+func (c *Config) InitFromViper(v *viper.Viper) *Config {
 	var err error
-	flags.ClientID = v.GetString(clientID)
-	flags.ClientSecret = v.GetString(clientSecret)
-	flags.LogLevel = v.GetString(logLevel)
-	flags.Scopes = strings.Split(v.GetString(scopes), ",")
-	flags.RedirectURIs = strings.Split(v.GetString(redirectURIs), ",")
 
-	flags.WhisperAdminURL, err = url.Parse(v.GetString(whisperAdminURL))
+	c.ClientID = v.GetString(clientID)
+	c.ClientSecret = v.GetString(clientSecret)
+	c.LogLevel = v.GetString(logLevel)
+	c.Scopes = strings.Split(v.GetString(scopes), ",")
+	c.RedirectURIs = strings.Split(v.GetString(redirectURIs), ",")
+
+	c.WhisperURL, err = url.Parse(v.GetString(whisperURL))
+	gohtypes.PanicIfError("Invalid whisper url", 500, err)
+
+	hydraAdminURL, hydraPublicURL := retrieveHydraURLs(c.WhisperURL.String())
+
+	c.HydraAdminURL, err = url.Parse(hydraAdminURL)
 	gohtypes.PanicIfError("Invalid whisper admin url", 500, err)
-	flags.WhisperPublicURL, err = url.Parse(v.GetString(whisperPublicURL))
+
+	c.HydraPublicURL, err = url.Parse(hydraPublicURL)
 	gohtypes.PanicIfError("Invalid whisper public url", 500, err)
 
-	flags.check()
+	c.check()
 
-	logLevel, err := logrus.ParseLevel(flags.LogLevel)
+	logLevel, err := logrus.ParseLevel(c.LogLevel)
 	if err != nil {
 		logrus.Errorf("Not able to parse log level string. Setting default level: info.")
 		logLevel = logrus.InfoLevel
 	}
+
 	logrus.SetLevel(logLevel)
 
-	return flags
+	return c
 }
 
-func (flags *Flags) check() {
-	if flags.ClientID == "" || flags.WhisperAdminURL.Host == "" || flags.WhisperPublicURL.Host == "" {
-		panic("client-id, whisper-admin-url and whisper-public-url cannot be empty")
+func retrieveHydraURLs(baseURL string) (string, string) {
+	httpClient, err := gohclient.New(nil, baseURL)
+	gohtypes.PanicIfError("Unable to create a client", http.StatusInternalServerError, err)
+
+	httpClient.ContentType = "application/x-www-form-urlencoded"
+	httpClient.Accept = "application/json"
+
+	resp, data, err := httpClient.Get("/hydra")
+	if err != nil || resp == nil || resp.StatusCode != 200 {
+		gohtypes.Panic("Unable to retrieve the hydra urls", http.StatusInternalServerError)
 	}
 
-	if len(flags.ClientSecret) < 6 {
+	var result = make(map[string]string)
+
+	err = json.Unmarshal(data, &result)
+	gohtypes.PanicIfError("Unable to unmarshal json", http.StatusInternalServerError, err)
+
+	return result["hydraAdminUrl"], result["hydraPublicUrl"]
+}
+
+func (c *Config) check() {
+	if c.ClientID == "" || c.WhisperURL.Host == "" {
+		panic("client-id, whisper-url cannot be empty")
+	}
+
+	if len(c.ClientSecret) < 6 {
 		panic("client-secret must be at least 6 characters long")
 	}
 }
