@@ -48,8 +48,8 @@ func initConfig() {
 
 // Run defines what should happen when the user runs 'whisper-client'
 func Run(cmd *cobra.Command, args []string) error {
-	flags := new(config.Config).InitFromViper(viper.GetViper())
-	whisperClient := new(client.WhisperClient).InitFromConfig(flags)
+	config := new(config.Config).InitFromViper(viper.GetViper())
+	whisperClient := new(client.WhisperClient).InitFromConfig(config)
 	t, err := whisperClient.CheckCredentials()
 	if err == nil { // store token
 		tokenJSONString := whisperClient.GetTokenAsJSONStr(t)
