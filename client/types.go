@@ -1,9 +1,10 @@
 package client
 
 import (
-	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/oauth2"
 
 	"github.com/labbsr0x/goh/gohclient"
 )
@@ -30,6 +31,7 @@ type hydraClient struct {
 	clientID     string
 	clientSecret string
 	RedirectURIs []string
+	PostLogoutRedirectURIs []string
 
 	tokenEndpointAuthMethod string
 	grantTypes              []string
@@ -108,6 +110,7 @@ type OAuth2Client struct {
 	LogoURI                   string               `json:"logo_uri,omitempty"`
 	Owner                     string               `json:"owner,omitempty"`
 	PolicyURI                 string               `json:"policy_uri,omitempty"`
+	PostLogoutRedirectURIs    []string             `json:"post_logout_redirect_uris,omitempty"`
 	RedirectURIs              []string             `json:"redirect_uris,omitempty"`
 	RequestObjectSigningAlg   string               `json:"request_object_signing_alg,omitempty"`
 	RequestURIs               []string             `json:"request_uris,omitempty"`

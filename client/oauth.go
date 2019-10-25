@@ -18,7 +18,7 @@ func (oah *oAuthHelper) init(oauthURL, redirectURL *url.URL, clientID, clientSec
 	return oah
 }
 
-// GetLoginURL builds the login url to authenticate with whisper
+// getLoginURL builds the login url to authenticate with whisper
 func (oah *oAuthHelper) getLoginURL() (string, error) {
 	state, nonce, err := misc.GetStateAndNonce()
 	if err == nil {
@@ -32,6 +32,11 @@ func (oah *oAuthHelper) getLoginURL() (string, error) {
 	}
 
 	return "", err
+}
+
+// getLogoutURL builds the revokeLoginSessions url to unauthenticate with whisper
+func (oah *oAuthHelper) getLogoutURL() (string, error) {
+	return oah.oauthURL.Host + "/oauth2/sessions/revokeLoginSessions", nil
 }
 
 // ExchangeCodeForToken performs the code exchange for an oauth token

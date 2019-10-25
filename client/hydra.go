@@ -13,7 +13,7 @@ import (
 )
 
 // initHydraClient initializes a hydra client
-func (client *hydraClient) initHydraClient(hydraAdminURL, hydraPublicURL, clientID, clientSecret, redirectURI string, scopes []string) *hydraClient {
+func (client *hydraClient) initHydraClient(hydraAdminURL, hydraPublicURL, clientID, clientSecret, loginRedirectURL, logoutRedirectURL string, scopes []string) *hydraClient {
 	var err error
 	client.public, err = gohclient.New(nil, hydraPublicURL)
 	gohtypes.PanicIfError("Invalid HydraPublicURL", 500, err)
@@ -27,7 +27,8 @@ func (client *hydraClient) initHydraClient(hydraAdminURL, hydraPublicURL, client
 	client.scopes = scopes
 	client.clientID = clientID
 	client.clientSecret = clientSecret
-	client.RedirectURIs = []string{ redirectURI }
+	client.RedirectURIs = []string{loginRedirectURL}
+	client.PostLogoutRedirectURIs = []string{logoutRedirectURL}
 
 	client.tokenEndpointAuthMethod = "none"
 	client.grantTypes = []string{"authorization_code", "refresh_token"}
@@ -62,6 +63,7 @@ func (client *hydraClient) createOAuth2Client() (result *OAuth2Client, err error
 			Scopes:                  strings.Join(client.scopes, " "),
 			GrantTypes:              client.grantTypes,
 			RedirectURIs:            client.RedirectURIs,
+			PostLogoutRedirectURIs:  client.PostLogoutRedirectURIs,
 		})
 
 	logrus.Debugf("CreateOAuth2Client - POST payload: '%v'", payloadData)
@@ -109,13 +111,13 @@ func (client *hydraClient) updateOAuth2Client() (result *OAuth2Client, err error
 	return nil, err
 }
 
-// Logout call hydra service and logs the user out
-func (client *hydraClient) logout(subject string) error {
+// revokeLoginSessions call hydra service and logs the user out
+func (client *hydraClient) revokeLoginSessions(subject string) error {
 	resp, _, err := client.admin.Delete(fmt.Sprintf("/oauth2/auth/sessions/login?subject=%v", subject))
 
 	if err == nil {
 		if resp != nil {
-			logrus.Debugf("Logout: %v - %v", subject, resp.StatusCode)
+			logrus.Debugf("RevokeLoginSessions: %v - %v", subject, resp.StatusCode)
 			if resp.StatusCode == 204 || resp.StatusCode == 201 {
 				return nil
 			} else if resp.StatusCode == 404 {

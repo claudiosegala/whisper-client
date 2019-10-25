@@ -23,18 +23,18 @@ import (
 
 // InitFromConfig initialize a whisper client from flags
 func (client *WhisperClient) InitFromConfig(config *config.Config) *WhisperClient {
-	redirectURL, err := url.Parse(config.RedirectURI)
+	loginRedirectURI, err := url.Parse(config.LoginRedirectURI)
 	gohtypes.PanicIfError("Unable to parse the redirect url", http.StatusInternalServerError, err)
 
-	client.oah = new(oAuthHelper).init(config.HydraPublicURL, redirectURL, config.ClientID, config.ClientSecret, config.Scopes)
-	client.hc = new(hydraClient).initHydraClient(config.HydraAdminURL.String(), config.HydraPublicURL.String(), config.ClientID, config.ClientSecret, config.RedirectURI, config.Scopes)
+	client.oah = new(oAuthHelper).init(config.HydraPublicURL, loginRedirectURI, config.ClientID, config.ClientSecret, config.Scopes)
+	client.hc = new(hydraClient).initHydraClient(config.HydraAdminURL.String(), config.HydraPublicURL.String(), config.ClientID, config.ClientSecret, config.LoginRedirectURI, config.LogoutRedirectURI, config.Scopes)
 	client.isPublic = len(strings.ReplaceAll(config.ClientSecret, " ", "")) == 0
 
 	return client
 }
 
 // InitFromParams initializes a whisper client from normal params
-func (client *WhisperClient) InitFromParams(whisperURL, clientID, clientSecret, redirectURI string, scopes []string) *WhisperClient {
+func (client *WhisperClient) InitFromParams(whisperURL, clientID, clientSecret, loginRedirectURI, logoutRedirectURI string, scopes []string) *WhisperClient {
 	hydraAdminURL, hydraPublicURL := misc.RetrieveHydraURLs(whisperURL)
 
 	whisperURI, err := url.Parse(whisperURL)
@@ -45,13 +45,14 @@ func (client *WhisperClient) InitFromParams(whisperURL, clientID, clientSecret, 
 	gohtypes.PanicIfError("Invalid hydra public url", 500, err)
 
 	return client.InitFromConfig(&config.Config{
-		ClientID:       clientID,
-		ClientSecret:   clientSecret,
-		WhisperURL:     whisperURI,
-		HydraAdminURL:  hydraAdminURI,
-		HydraPublicURL: hydraPublicURI,
-		Scopes:         scopes,
-		RedirectURI:    redirectURI,
+		ClientID:          clientID,
+		ClientSecret:      clientSecret,
+		WhisperURL:        whisperURI,
+		HydraAdminURL:     hydraAdminURI,
+		HydraPublicURL:    hydraPublicURI,
+		Scopes:            scopes,
+		LoginRedirectURI:  loginRedirectURI,
+		LogoutRedirectURI: logoutRedirectURI,
 	})
 }
 
@@ -152,17 +153,22 @@ func (client *WhisperClient) DoClientCredentialsFlow() (t *oauth2.Token, err err
 	return oauthConfig.Token(ctx)
 }
 
-// GetLoginURL retrieves the hydra login url
+// GetOAuth2LoginURL retrieves the hydra login url
 func (client *WhisperClient) GetOAuth2LoginURL() (string, error) {
 	return client.oah.getLoginURL()
 }
 
+// GetOAuth2LogoutURL retrieves the hydra revokeLoginSessions url
+func (client *WhisperClient) GetOAuth2LogoutURL() (string, error) {
+	return client.oah.getLogoutURL()
+}
+
 // ExchangeCodeForToken retrieves a token provided a valid code
-func (client *WhisperClient) ExchangeCodeForToken (code string) (token *oauth2.Token, err error) {
+func (client *WhisperClient) ExchangeCodeForToken(code string) (token *oauth2.Token, err error) {
 	return client.oah.exchangeCodeForToken(code)
 }
 
-// Logout logs out
-func (client *WhisperClient) Logout (subject string) error {
-	return client.hc.logout(subject)
+// RevokeLoginSessions logs out
+func (client *WhisperClient) RevokeLoginSessions(subject string) error {
+	return client.hc.revokeLoginSessions(subject)
 }
