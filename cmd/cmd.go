@@ -1,13 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-
-	"github.com/labbsr0x/whisper-client/client"
 
 	"github.com/labbsr0x/whisper-client/config"
 
@@ -19,7 +16,6 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "whisper-client",
 	Short: "An utility for performing an oauth2 client-credentials flow with Hydra to be used with Whisper",
-	RunE:  Run,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -44,16 +40,4 @@ func initConfig() {
 	viper.SetEnvPrefix(os.Getenv("WHISPER_CLIENT_ENV_PREFIX")) // all
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	viper.AutomaticEnv() // read in environment variables that match
-}
-
-// Run defines what should happen when the user runs 'whisper-client'
-func Run(cmd *cobra.Command, args []string) error {
-	config := new(config.Config).InitFromViper(viper.GetViper())
-	whisperClient := new(client.WhisperClient).InitFromConfig(config)
-	t, err := whisperClient.CheckCredentials()
-	if err == nil { // store token
-		tokenJSONString := whisperClient.GetTokenAsJSONStr(t)
-		fmt.Printf(tokenJSONString)
-	}
-	return err
 }
